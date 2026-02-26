@@ -1,0 +1,51 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HAModHelper.GamePlugin", "HAModHelper.GamePlugin\HAModHelper.GamePlugin.csproj", "{B31ADE24-66C8-B8AA-3781-51CAD769655C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HAModHelper.Tests", "HAModHelper.Tests\HAModHelper.Tests.csproj", "{D222712C-7A63-425B-A09A-756ED44AA49B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B31ADE24-66C8-B8AA-3781-51CAD769655C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B31ADE24-66C8-B8AA-3781-51CAD769655C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B31ADE24-66C8-B8AA-3781-51CAD769655C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B31ADE24-66C8-B8AA-3781-51CAD769655C}.Debug|x64.Build.0 = Debug|Any CPU
+		{B31ADE24-66C8-B8AA-3781-51CAD769655C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B31ADE24-66C8-B8AA-3781-51CAD769655C}.Debug|x86.Build.0 = Debug|Any CPU
+		{B31ADE24-66C8-B8AA-3781-51CAD769655C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B31ADE24-66C8-B8AA-3781-51CAD769655C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B31ADE24-66C8-B8AA-3781-51CAD769655C}.Release|x64.ActiveCfg = Release|Any CPU
+		{B31ADE24-66C8-B8AA-3781-51CAD769655C}.Release|x64.Build.0 = Release|Any CPU
+		{B31ADE24-66C8-B8AA-3781-51CAD769655C}.Release|x86.ActiveCfg = Release|Any CPU
+		{B31ADE24-66C8-B8AA-3781-51CAD769655C}.Release|x86.Build.0 = Release|Any CPU
+		{D222712C-7A63-425B-A09A-756ED44AA49B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D222712C-7A63-425B-A09A-756ED44AA49B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D222712C-7A63-425B-A09A-756ED44AA49B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D222712C-7A63-425B-A09A-756ED44AA49B}.Debug|x64.Build.0 = Debug|Any CPU
+		{D222712C-7A63-425B-A09A-756ED44AA49B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D222712C-7A63-425B-A09A-756ED44AA49B}.Debug|x86.Build.0 = Debug|Any CPU
+		{D222712C-7A63-425B-A09A-756ED44AA49B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D222712C-7A63-425B-A09A-756ED44AA49B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D222712C-7A63-425B-A09A-756ED44AA49B}.Release|x64.ActiveCfg = Release|Any CPU
+		{D222712C-7A63-425B-A09A-756ED44AA49B}.Release|x64.Build.0 = Release|Any CPU
+		{D222712C-7A63-425B-A09A-756ED44AA49B}.Release|x86.ActiveCfg = Release|Any CPU
+		{D222712C-7A63-425B-A09A-756ED44AA49B}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6706D2C8-CEA5-4F50-BB74-C7A95B018C48}
+	EndGlobalSection
+EndGlobal
