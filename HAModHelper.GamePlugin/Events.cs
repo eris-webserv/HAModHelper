@@ -68,7 +68,7 @@ public sealed class EventBus
 
 public abstract class BaseEvent
 {
-    public bool Handled { get; set; }
-    public bool Cancelled { get; set; }
-    public bool Fired { get; internal set; }
+    public bool Handled { get; set; } = false;
+    public bool Cancelled { get; set; } = false;
+    public bool Fired { get; internal set; } = false;
 }
