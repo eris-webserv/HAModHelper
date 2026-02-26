@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using HAModHelper.Events;
+using HAModHelper.GamePlugin.Items;
 
 namespace HAModHelper.FakeAPIDefinitionsForPlanningDontUseThesePleaseGod
 {
@@ -77,14 +78,6 @@ namespace HAModHelper.FakeAPIDefinitionsForPlanningDontUseThesePleaseGod
         public Dimension NewDimension { get; set; }
     }
 
-    public class Item
-    {
-        public string ItemId { get; set; }
-        public string Name { get; set; }
-        public int StackLimit { get; set; } = 1;
-        public ItemActions Actions { get; set; }
-    }
-
     public class Player
     {
         public string Id { get; set; }
@@ -103,14 +96,6 @@ namespace HAModHelper.FakeAPIDefinitionsForPlanningDontUseThesePleaseGod
         public bool IsTerminating { get; set; }
     }
 
-    [Flags]
-    public enum ItemActions
-    {
-        IsTool = 1 << 0,
-        IsUsable = 1 << 1,
-        IsConsumable = 1 << 2,
-        IsPlaceable = 1 << 3,
-    }
     public class Dimension
     {
         public string Id { get; set; }

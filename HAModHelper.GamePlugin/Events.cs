@@ -29,17 +29,16 @@ public sealed class EventBus
         });
     }
 
-    public BaseEvent? Fire<TEvent>(TEvent ev) where TEvent : BaseEvent
+    public BaseEvent Fire<TEvent>(TEvent ev) where TEvent : BaseEvent
     {
         if (ev.Fired)
         {
             throw new Exception($"Event by type {typeof(TEvent).FullName} was fired multiple times!");
-        }
-        ;
+        };
 
         var t = typeof(TEvent);
         if (!_subs.TryGetValue(t, out var list) || list.Count == 0)
-            return null;
+            return ev;
 
         ev.Fired = true; // NO REFIRING THE SAME EVENT YOU CHUD.
 
@@ -71,5 +70,5 @@ public abstract class BaseEvent
 {
     public bool Handled { get; set; }
     public bool Cancelled { get; set; }
-    internal bool Fired { get; set; }
+    public bool Fired { get; internal set; }
 }

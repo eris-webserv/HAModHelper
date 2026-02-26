@@ -8,6 +8,5 @@ internal class HAMHMod : MelonPlugin
     public override void OnApplicationEarlyStart()
     {
         base.OnApplicationEarlyStart();
-
     }
 }

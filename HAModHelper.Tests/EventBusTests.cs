@@ -1,4 +1,4 @@
-/*using System;
+using System;
 using HAModHelper.Events;
 using Xunit;
 
@@ -10,14 +10,15 @@ namespace HAModHelper.Tests
         private class DummyEvent2 : BaseEvent { }
         private class DummyEvent3 : BaseEvent { }
         private class DummyEvent4 : BaseEvent { }
+        private class DummyEvent5 : BaseEvent { }
 
         [Fact]
-        public void NoSubscribers_ReturnsNull()
+        public void NoSubscribers_FiredReturnsFalse()
         {
             var bus = EventBus.Instance;
             var ev = new DummyEvent1();
             var result = bus.Fire(ev);
-            Assert.Null(result);
+            Assert.False(result.Fired);
         }
 
         [Fact]
@@ -69,10 +70,10 @@ namespace HAModHelper.Tests
         public void FiringSameInstance_Twice_Throws()
         {
             var bus = EventBus.Instance;
-            bus.Subscribe<DummyEvent1>(_ => { });
-            var ev = new DummyEvent1();
+            bus.Subscribe<DummyEvent5>(_ => { });
+            var ev = new DummyEvent5();
             bus.Fire(ev);
             Assert.Throws<Exception>(() => bus.Fire(ev));
         }
     }
-}*/
+}
