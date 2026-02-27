@@ -36,43 +36,43 @@ internal class HAMHMod : MelonPlugin
         }
     }
 
-    [HarmonyPatch(typeof(ResourceControl), "TryLoadInventoryItem")]
+    [HarmonyPatch(typeof(ResourceControl), "TryLoadInventoryItem", new Type[] { typeof(string) })]
     static class TryLoadInventoryItemPatch
+{
+    static bool Prefix(object __instance, string item_name, ref bool __result)
     {
-        static bool Prefix(object __instance, string item_name, ref bool __result)
+        MelonLogger.Msg("[HAMH] TryLoadInventoryItem called for item: " + item_name);
+
+        var mgr = ItemManager.Instance;
+
+        var item = mgr.GetItem(item_name);
+        if (item != null)
         {
-            MelonLogger.Msg("[HAMH] TryLoadInventoryItem called for item: " + item_name);
-
-            var mgr = ItemManager.Instance;
-
-            var item = mgr.GetItem(item_name);
-            if (item != null)
-            {
-                MelonLogger.Msg($"[HAMH] Providing modded item for {item_name}");
-                Inject(item_name, item);
-                __result = true;
-                return false;
-            }
-
-            if (mgr.IsBaseItemBlocked(item_name))
-            {
-                MelonLogger.Msg($"[HAMH] Blocking base game item {item_name}");
-                __result = false;
-                return false;
-            }
-
-            MelonLogger.Msg($"[HAMH] No modded item found for {item_name}");
-            return true; // Let the game handle the rest from here...
+            MelonLogger.Msg($"[HAMH] Providing modded item for {item_name}");
+            Inject(item_name, item);
+            __result = true;
+            return false;
         }
 
-        static void Inject(string id, Item item)
+        if (mgr.IsBaseItemBlocked(item_name))
         {
-            var rc = UnityEngine.Object.FindObjectOfType<ResourceControl>();
-
-            if (rc.loaded_inventory_item_files == null)
-                return;
-
-            rc.loaded_inventory_item_files[id] = ItemManager.Instance.ConvertItem(item);
+            MelonLogger.Msg($"[HAMH] Blocking base game item {item_name}");
+            __result = false;
+            return false;
         }
+
+        MelonLogger.Msg($"[HAMH] No modded item found for {item_name}");
+        return true; // Let the game handle the rest from here...
     }
+
+    static void Inject(string id, Item item)
+    {
+        var rc = UnityEngine.Object.FindObjectOfType<ResourceControl>();
+
+        if (rc.loaded_inventory_item_files == null)
+            return;
+
+        rc.loaded_inventory_item_files[id] = ItemManager.Instance.ConvertItem(item);
+    }
+}
 }
