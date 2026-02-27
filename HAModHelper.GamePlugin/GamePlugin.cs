@@ -32,11 +32,14 @@ internal class HAMHMod : MelonPlugin
     {
         static bool Prefix(object __instance, string item_name, ref bool __result)
         {
+            MelonLogger.Msg("[HAMH] TryLoadInventoryItem called for item: " + item_name);
+
             var mgr = ItemManager.Instance;
 
             var item = mgr.GetItem(item_name);
             if (item != null)
             {
+                MelonLogger.Msg($"[HAMH] Providing modded item for {item_name}");
                 Inject(item_name, item);
                 __result = true;
                 return false;
@@ -44,10 +47,12 @@ internal class HAMHMod : MelonPlugin
 
             if (mgr.IsBaseItemBlocked(item_name))
             {
+                MelonLogger.Msg($"[HAMH] Blocking base game item {item_name}");
                 __result = false;
                 return false;
             }
 
+            MelonLogger.Msg($"[HAMH] No modded item found for {item_name}");
             return true; // Let the game handle the rest from here...
         }
 
