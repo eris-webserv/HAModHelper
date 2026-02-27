@@ -21,6 +21,10 @@
       <HintPath>$(MSBuildProjectDirectory)/../LemonLibs/Il2CppAssemblies/UnityEngine.CoreModule.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>$(MSBuildProjectDirectory)/../LemonLibs/Il2CppAssemblies/UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Il2CppInterop.Common">
       <HintPath>$(MSBuildProjectDirectory)/../LemonLibs/net8/Il2CppInterop.Common.dll</HintPath>
       <Private>True</Private>
