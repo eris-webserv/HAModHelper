@@ -24,7 +24,16 @@ internal class HAMHMod : MelonPlugin
 
     private void DrawMenu()
     {
-        GUI.Box(new Rect(0, 0, 300, 500), "My Menu");
+        GUI.Box(new Rect(0, 0, 300, 500), "Test Menu");
+        // button that gives you item "hamltest:minosprime"
+        if (GUI.Button(new Rect(10, 30, 280, 30), "Give Minos Prime"))
+        {
+            var ictr = UnityEngine.Object.FindObjectOfType<inventory_ctr>();
+            if (ictr != null)
+            {
+                ictr.GiveItem("hamltest:minosprime", 1, null);
+            }
+        }
     }
 
     [HarmonyPatch(typeof(ResourceControl), "TryLoadInventoryItem")]

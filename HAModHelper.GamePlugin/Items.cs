@@ -149,9 +149,6 @@ public sealed class ItemManager
         return null;
     }
 
-    public bool TryGetModItem(string id, out Item item)
-        => _items.TryGetValue(id, out item);
-
     public bool IsBaseItemBlocked(string id)
         => _removedBaseItems.Contains(id);
 
