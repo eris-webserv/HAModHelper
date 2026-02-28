@@ -14,13 +14,14 @@ public class Item
     public required string ItemId { get; set; }
     public string Id => $"{ModId}:{ItemId}";
 
+    public required string Name { get; set; }
     public string? Description { get; set; }
     public int StackLimit { get; set; } = 1;
-    public ItemActions Actions { get; set; } = 0;
+    public ItemActions Actions { get; set; } = 0; // UNUSED AS OF YET UNTIL I FIND A WAY TO PATCH THE NECCESARY FUNCTIONS!!
     public string? SpritePath { get; set; }
 
     // Escape hatch for anything not modeled yet (including keys with spaces)
-    public Dictionary<string, string> ExtraFields { get; } = new();
+    public Dictionary<string, string> ExtraFields { get; set; } = new();
 }
 
 [Flags]
@@ -42,7 +43,11 @@ internal static class ItemConverter
 
         // Sprite path (real key)
         if (!string.IsNullOrWhiteSpace(item.SpritePath))
-            d[KeySpritePath] = item.SpritePath!;
+            d[KeySpritePath] = item.SpritePath;
+
+        d["Name"] = item.Name ?? "Modded Item";
+        if (!string.IsNullOrWhiteSpace(item.Description))
+            d["Description"] = item.Description;
 
         // Extra fields override everything else (modder wins).
         foreach (var (k, v) in item.ExtraFields)
@@ -63,6 +68,7 @@ internal static class ItemConverter
         {
             ModId = modId,
             ItemId = id,
+            Name = fields.TryGetValue("Name", out var name) ? name : id,
         };
 
         if (fields.TryGetValue(KeySpritePath, out var sprite))
@@ -102,7 +108,7 @@ public sealed class ItemManager
 
     public void Initialize()
     {
-        
+
     }
 
     public void AddItem(Item item)
@@ -138,7 +144,7 @@ public sealed class ItemManager
             : fullId;
 
         if (_items.TryGetValue(fullId, out var modItem))
-            return modItem; 
+            return modItem;
 
         if (rc.loaded_inventory_item_files != null && rc.loaded_inventory_item_files.TryGetValue(lookupId, out var gameFields))
         {
@@ -154,14 +160,14 @@ public sealed class ItemManager
 
     // ---------- injection helpers ----------
 
-    void TryInjectIntoGameCache(string id, Item item)
+    public void TryInjectIntoGameCache(string id, Item item)
     {
         var rc = UnityEngine.Object.FindObjectOfType<ResourceControl>();
 
         rc.loaded_inventory_item_files[id] = ConvertItem(item);
     }
 
-    void RemoveFromGameCache(string id)
+    public void RemoveFromGameCache(string id)
     {
         var rc = UnityEngine.Object.FindObjectOfType<ResourceControl>();
 
