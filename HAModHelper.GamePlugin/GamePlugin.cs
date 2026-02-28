@@ -109,10 +109,12 @@ internal class HAMHMod : MelonPlugin
 
             if (modItem != null)
             {
-                MelonLogger.Msg($"[HAMH] Returning modded full ID for {item.item_name}");
+                MelonLogger.Msg($"[HAMH] Returning modded name for {item.item_name}");
                 __result = modItem.Name;
                 return false;
             }
+
+            MelonLogger.Msg($"[HAMH] No modded item found for {item.item_name}");
 
             return true; // Let the game handle the rest from here...
         }
