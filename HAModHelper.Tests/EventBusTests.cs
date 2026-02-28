@@ -11,6 +11,7 @@ namespace HAModHelper.Tests
         private class DummyEvent3 : BaseEvent { }
         private class DummyEvent4 : BaseEvent { }
         private class DummyEvent5 : BaseEvent { }
+        private class DummyEvent7 : BaseEvent { }
         private class DummyEvent6 : BaseEvent
         {
             public string Wawa { get; set; }
@@ -91,8 +92,14 @@ namespace HAModHelper.Tests
         {
             var bus = EventBus.Instance;
             var alsobus = EventBus.Instance;
+
+            bus.Subscribe<DummyEvent7>(_ => { });
             
             Assert.Equal(bus, alsobus);
+
+            var ev = new DummyEvent7();
+            var result = bus.Fire(ev);
+            Assert.True(result.Fired);
         }
 
         [Fact]
