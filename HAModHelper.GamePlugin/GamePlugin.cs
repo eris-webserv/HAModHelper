@@ -52,6 +52,8 @@ internal class HAMHMod : MelonPlugin
 
             var mgr = ItemManager.Instance;
 
+            mgr.ProcessQueuedItems();
+
             var item = mgr.GetItem(item_name);
             if (item != null)
             {
@@ -81,17 +83,6 @@ internal class HAMHMod : MelonPlugin
         {
             MelonLogger.Msg("[HAMH] GiveItem called for " + item_name);
             return true; // Let the game handle the rest from here...
-        }
-    }
-
-    [HarmonyPatch(typeof(ResourceControl))]
-    private static class ResourceControlInitPatch
-    {
-        [HarmonyPostfix, HarmonyPatch(MethodType.Constructor)]
-        static void Postfix()
-        {
-            MelonLogger.Msg("[HAMH] ResourceControl initialized, processing queued items...");
-            ItemManager.Instance.ProcessQueuedItems();
         }
     }
 }
