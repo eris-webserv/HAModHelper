@@ -94,4 +94,27 @@ internal class HAMHMod : MelonPlugin
             return true; // Let the game handle the rest from here...
         }
     }
+
+    [HarmonyPatch(typeof(inventory_ctr), "GetFullItemName", new Type[] { typeof(InventoryItem) })]
+    private static class GetFullItemNamePatch
+    {
+        [HarmonyPrefix]
+        static bool Prefix(InventoryItem item, ref string __result)
+        {
+            MelonLogger.Msg("[HAMH] GetFullItemName called for item: " + item.item_name);
+
+            var mgr = ItemManager.Instance;
+
+            var modItem = mgr.GetItem(item.item_name);
+
+            if (modItem != null)
+            {
+                MelonLogger.Msg($"[HAMH] Returning modded full ID for {item.item_name}");
+                __result = modItem.Name;
+                return false;
+            }
+
+            return true; // Let the game handle the rest from here...
+        }
+    }
 }
