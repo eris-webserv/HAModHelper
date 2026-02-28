@@ -2,6 +2,7 @@ using System.Reflection;
 using HarmonyLib;
 using Il2Cpp;
 using Il2CppSystem.Security.Cryptography;
+using MelonLoader;
 
 namespace HAModHelper.GamePlugin.Items;
 
@@ -102,7 +103,6 @@ public sealed class ItemManager
 
     private Dictionary<string, Item> _queuedItems = new();
     private HashSet<string> _removedBaseItems = new();
-
     private ItemManager()
     {
 
@@ -110,7 +110,6 @@ public sealed class ItemManager
 
     public void Initialize()
     {
-
     }
 
     public void AddItem(Item item)
@@ -184,11 +183,14 @@ public sealed class ItemManager
 
     public void ProcessQueuedItems()
     {
+        var watch = System.Diagnostics.Stopwatch.StartNew();
         foreach (var kvp in _queuedItems)
         {
             TryInjectIntoGameCache(kvp.Key, kvp.Value);
         }
         _queuedItems.Clear();
+        watch.Stop();
+        MelonLogger.Msg($"[HAMH] Processed queued items in {watch.ElapsedMilliseconds}ms.");
     }
 
     public Il2CppSystem.Collections.Generic.Dictionary<string, string> ConvertItem(Item item)
