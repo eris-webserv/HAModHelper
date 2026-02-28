@@ -25,16 +25,6 @@ internal class HAMHMod : MelonPlugin
 
         MelonLogger.Msg("[HAMH] Initialization complete.");
 
-        ItemManager.Instance.AddItem(new Item
-        {
-            ModId = "hamltest",
-            ItemId = "minosprime",
-            Name = "Minos Prime",
-            Description = "evil fucking debugging item of despair",
-            StackLimit = 1,
-            SpritePath = "item egg"
-        });
-
         MelonEvents.OnGUI.Subscribe(DrawMenu, 100); // The higher the value, the lower the priority.
     }
 
@@ -91,6 +81,17 @@ internal class HAMHMod : MelonPlugin
         {
             MelonLogger.Msg("[HAMH] GiveItem called for " + item_name);
             return true; // Let the game handle the rest from here...
+        }
+    }
+
+    [HarmonyPatch(typeof(ResourceControl))]
+    private static class ResourceControlInitPatch
+    {
+        [HarmonyPostfix, HarmonyPatch(MethodType.Constructor)]
+        static void Postfix()
+        {
+            MelonLogger.Msg("[HAMH] ResourceControl initialized, processing queued items...");
+            ItemManager.Instance.ProcessQueuedItems();
         }
     }
 }
