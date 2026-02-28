@@ -17,14 +17,30 @@ internal class HAMHMod : MelonPlugin
         stopwatch.Stop();
         MelonLogger.Msg($"[HAMH] Initialized ItemManager in {stopwatch.ElapsedMilliseconds}ms.");
 
+        MelonLogger.Msg("[HAMH] Applying Harmony patches...");
+        HarmonyInstance.PatchAll();
+
+        var patches = HarmonyInstance.GetPatchedMethods();
+        MelonLogger.Msg($"[HAMH] Applied {patches.Count()} Harmony patches.");
+
         MelonLogger.Msg("[HAMH] Initialization complete.");
+
+        ItemManager.Instance.AddItem(new Item
+        {
+            ModId = "hamltest",
+            ItemId = "minosprime",
+            Name = "Minos Prime",
+            Description = "evil fucking debugging item of despair",
+            StackLimit = 1,
+            SpritePath = "item egg"
+        });
 
         MelonEvents.OnGUI.Subscribe(DrawMenu, 100); // The higher the value, the lower the priority.
     }
 
     private void DrawMenu()
     {
-        GUI.Box(new Rect(0, 0, 300, 500), "Test Menu");
+        GUI.Box(new Rect(0, 0, 300, 200), "Test Menu");
         // button that gives you item "hamltest:minosprime"
         if (GUI.Button(new Rect(10, 30, 280, 30), "Give Minos Prime"))
         {
@@ -37,42 +53,44 @@ internal class HAMHMod : MelonPlugin
     }
 
     [HarmonyPatch(typeof(ResourceControl), "TryLoadInventoryItem", new Type[] { typeof(string) })]
-    static class TryLoadInventoryItemPatch
-{
-    static bool Prefix(object __instance, string item_name, ref bool __result)
+    private static class TryLoadInventoryItemPatch
     {
-        MelonLogger.Msg("[HAMH] TryLoadInventoryItem called for item: " + item_name);
-
-        var mgr = ItemManager.Instance;
-
-        var item = mgr.GetItem(item_name);
-        if (item != null)
+        [HarmonyPrefix]
+        static bool Prefix(string item_name, ref bool __result)
         {
-            MelonLogger.Msg($"[HAMH] Providing modded item for {item_name}");
-            Inject(item_name, item);
-            __result = true;
-            return false;
-        }
+            MelonLogger.Msg("[HAMH] TryLoadInventoryItem called for item: " + item_name);
 
-        if (mgr.IsBaseItemBlocked(item_name))
-        {
-            MelonLogger.Msg($"[HAMH] Blocking base game item {item_name}");
-            __result = false;
-            return false;
-        }
+            var mgr = ItemManager.Instance;
 
-        MelonLogger.Msg($"[HAMH] No modded item found for {item_name}");
-        return true; // Let the game handle the rest from here...
+            var item = mgr.GetItem(item_name);
+            if (item != null)
+            {
+                MelonLogger.Msg($"[HAMH] Providing modded item for {item_name}");
+                mgr.TryInjectIntoGameCache(item_name, item);
+                __result = true;
+                return false;
+            }
+
+            if (mgr.IsBaseItemBlocked(item_name))
+            {
+                MelonLogger.Msg($"[HAMH] Blocking base game item {item_name}");
+                __result = false;
+                return false;
+            }
+
+            MelonLogger.Msg($"[HAMH] No modded item found for {item_name}");
+            return true; // Let the game handle the rest from here...
+        }
     }
 
-    static void Inject(string id, Item item)
+    [HarmonyPatch(typeof(inventory_ctr), "GiveItem", new Type[] { typeof(string), typeof(int), typeof(string), typeof(bool) })]
+    private static class GiveItemPatch
     {
-        var rc = UnityEngine.Object.FindObjectOfType<ResourceControl>();
-
-        if (rc.loaded_inventory_item_files == null)
-            return;
-
-        rc.loaded_inventory_item_files[id] = ItemManager.Instance.ConvertItem(item);
+        [HarmonyPrefix]
+        static bool Prefix(string item_name, int count, string fn_validator, bool visual)
+        {
+            MelonLogger.Msg("[HAMH] GiveItem called for " + item_name);
+            return true; // Let the game handle the rest from here...
+        }
     }
-}
 }
