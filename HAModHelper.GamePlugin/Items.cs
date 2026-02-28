@@ -36,17 +36,18 @@ public enum ItemActions
 
 internal static class ItemConverter
 {
-    public const string KeySpritePath = "Inventory_sprite_path";
-
     public static Il2CppSystem.Collections.Generic.Dictionary<string, string> ToGameFields(Item item)
     {
         var d = new Il2CppSystem.Collections.Generic.Dictionary<string, string>();
 
         // Sprite path (real key)
         if (!string.IsNullOrWhiteSpace(item.SpritePath))
-            d[KeySpritePath] = item.SpritePath;
+            d["Inventory_sprite_path"] = item.SpritePath;
 
         d["Name"] = item.Name ?? "Modded Item";
+        
+        d["Max_stack"] = item.StackLimit.ToString();
+
         if (!string.IsNullOrWhiteSpace(item.Description))
             d["Description"] = item.Description;
 
@@ -72,14 +73,19 @@ internal static class ItemConverter
             Name = fields.TryGetValue("Name", out var name) ? name : id,
         };
 
-        if (fields.TryGetValue(KeySpritePath, out var sprite))
+        if (fields.TryGetValue("Inventory_sprite_path", out var sprite))
             item.SpritePath = sprite;
+
+        if (fields.TryGetValue("Description", out var desc))
+            item.Description = desc;
 
         // Everything else goes into ExtraFields (including keys with spaces)
         foreach (var kvp in fields)
         {
             // Skip ones we modeled above
-            if (kvp.Key == KeySpritePath) continue;
+            if (kvp.Key == "Inventory_sprite_path") continue;
+            if (kvp.Key == "Name") continue;
+            if (kvp.Key == "Description") continue;
 
             item.ExtraFields[kvp.Key] = kvp.Value;
         }
@@ -100,7 +106,6 @@ public sealed class ItemManager
     public static ItemManager Instance { get; } = new ItemManager();
 
     private Dictionary<string, Item> _items = new();
-
     private Dictionary<string, Item> _queuedItems = new();
     private HashSet<string> _removedBaseItems = new();
     private ItemManager()
@@ -169,6 +174,7 @@ public sealed class ItemManager
         rc.loaded_inventory_item_files[id] = ConvertItem(item);
         } catch (Exception)
         {
+            MelonLogger.Msg($"[HAMH] ResourceControl not ready, queuing item {id}");
             // queue for when ResourceControl spawns
             _queuedItems[id] = item;
         }
@@ -183,14 +189,18 @@ public sealed class ItemManager
 
     public void ProcessQueuedItems()
     {
+        var processedItem = false;
         var watch = System.Diagnostics.Stopwatch.StartNew();
         foreach (var kvp in _queuedItems)
         {
+            processedItem = true;
+            MelonLogger.Msg($"[HAMH] Processing queued item {kvp.Key}");
             TryInjectIntoGameCache(kvp.Key, kvp.Value);
         }
         _queuedItems.Clear();
         watch.Stop();
-        MelonLogger.Msg($"[HAMH] Processed queued items in {watch.ElapsedMilliseconds}ms.");
+        if (processedItem)
+            MelonLogger.Msg($"[HAMH] Processed queued items in {watch.ElapsedMilliseconds}ms.");
     }
 
     public Il2CppSystem.Collections.Generic.Dictionary<string, string> ConvertItem(Item item)

@@ -23,6 +23,15 @@ internal class HAMHMod : MelonPlugin
         var patches = HarmonyInstance.GetPatchedMethods();
         MelonLogger.Msg($"[HAMH] Applied {patches.Count()} Harmony patches.");
 
+        ItemManager.Instance.AddItem(new Item
+        {
+            ModId = "hamltest",
+            ItemId = "minosprime",
+            Name = "Minos Prime",
+            Description = "debug test item",
+            SpritePath = "item egg",
+        });
+
         MelonLogger.Msg("[HAMH] Initialization complete.");
 
         MelonEvents.OnGUI.Subscribe(DrawMenu, 100); // The higher the value, the lower the priority.
