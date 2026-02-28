@@ -171,11 +171,7 @@ public sealed class ItemManager
 
     // TEST-ONLY: Spoof a fake ResourceControl for HAModHelper.Tests to use
     public IResourceControl? DebugResourceControlSource { get; set; }
-
-    private ItemManager()
-    {
-
-    }
+    private ItemManager() { }
 
     // helper used by methods to obtain a proxy object
     private IResourceControl? GetResourceControl()
