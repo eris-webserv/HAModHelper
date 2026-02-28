@@ -17,5 +17,17 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HAModHelper.GamePlugin\HAModHelper.GamePlugin.csproj" />
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>$(MSBuildProjectDirectory)/../LemonLibs/Il2CppAssemblies/Il2Cppmscorlib.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Il2CppInterop.Common">
+      <HintPath>$(MSBuildProjectDirectory)/../LemonLibs/net8/Il2CppInterop.Common.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>$(MSBuildProjectDirectory)/../LemonLibs/net8/Il2CppInterop.Runtime.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
 </Project>

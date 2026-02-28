@@ -34,18 +34,52 @@ public enum ItemActions
     IsPlaceable = 1 << 3,
 }
 
-internal static class ItemConverter
+public static class ItemConverter
 {
-    public static Il2CppSystem.Collections.Generic.Dictionary<string, string> ToGameFields(Item item)
+    public static Dictionary<T1, T2> NormalizeIL2CPPDictionary<T1, T2>(Il2CppSystem.Collections.Generic.Dictionary<T1, T2> dict) where T1 : notnull
     {
-        var d = new Il2CppSystem.Collections.Generic.Dictionary<string, string>();
+        var d = new Dictionary<T1, T2>();
+        foreach (var kvp in dict)
+            d[kvp.Key] = kvp.Value;
+        return d;
+    }
+
+    public static Dictionary<string, Dictionary<string, string>> NormalizeHybridItemDictionary(Il2CppSystem.Collections.Generic.Dictionary<string, Il2CppSystem.Collections.Generic.Dictionary<string, string>> dict)
+    {
+        var d = new Dictionary<string, Dictionary<string, string>>();
+        foreach (var kvp in dict)
+            d[kvp.Key] = NormalizeIL2CPPDictionary(kvp.Value);
+        return d;
+    }
+
+    public static Il2CppSystem.Collections.Generic.Dictionary<T1, T2> DenormalizeIL2CPPDictionary<T1, T2>(Dictionary<T1, T2> dict) where T1 : notnull
+    {
+        var d = new Il2CppSystem.Collections.Generic.Dictionary<T1, T2>();
+        foreach (var kvp in dict)
+            d[kvp.Key] = kvp.Value;
+        return d;
+    }
+
+    public static Il2CppSystem.Collections.Generic.Dictionary<string, Il2CppSystem.Collections.Generic.Dictionary<string, string>> DenormalizeHybridItemDictionary(Dictionary<string, Dictionary<string, string>> dict)
+    {
+        var d = new Il2CppSystem.Collections.Generic.Dictionary<string, Il2CppSystem.Collections.Generic.Dictionary<string, string>>();
+        foreach (var kvp in dict)
+        {
+            d[kvp.Key] = DenormalizeIL2CPPDictionary(kvp.Value);
+        }
+        return d;
+    }
+
+    public static Dictionary<string, string> ToGameFields(Item item)
+    {
+        var d = new Dictionary<string, string>();
 
         // Sprite path (real key)
         if (!string.IsNullOrWhiteSpace(item.SpritePath))
             d["Inventory_sprite_path"] = item.SpritePath;
 
         d["Name"] = item.Name ?? "Modded Item";
-        
+
         d["Max_stack"] = item.StackLimit.ToString();
 
         if (!string.IsNullOrWhiteSpace(item.Description))
@@ -62,7 +96,7 @@ internal static class ItemConverter
     }
 
     // Optional helper: turn a game dict back into an Item (useful for GetItem(base:...)) (actually only for that)
-    public static Item FromGameFields(string fullId, Il2CppSystem.Collections.Generic.Dictionary<string, string> fields)
+    public static Item FromGameFields(string fullId, Dictionary<string, string> fields)
     {
         var (modId, id) = SplitFullId(fullId);
 
@@ -78,6 +112,9 @@ internal static class ItemConverter
 
         if (fields.TryGetValue("Description", out var desc))
             item.Description = desc;
+
+        if (fields.TryGetValue("Max_stack", out var stackStr) && int.TryParse(stackStr, out var stack))
+            item.StackLimit = stack;
 
         // Everything else goes into ExtraFields (including keys with spaces)
         foreach (var kvp in fields)
@@ -103,14 +140,65 @@ internal static class ItemConverter
 
 public sealed class ItemManager
 {
+    // internal abstraction used by tests (and runtime wrapper)
+    public interface IResourceControl
+    {
+        Dictionary<string, Dictionary<string, string>> loaded_inventory_item_files { get; set; }
+    }
+
+    // runtime adapter that wraps the real game ResourceControl
+    private class UnityResourceControl : IResourceControl
+    {
+        private readonly ResourceControl _rc;
+        public UnityResourceControl(ResourceControl rc) => _rc = rc;
+        public Dictionary<string, Dictionary<string, string>> loaded_inventory_item_files
+        {
+            get => ItemConverter.NormalizeHybridItemDictionary(_rc.loaded_inventory_item_files);
+            set => ItemConverter.DenormalizeHybridItemDictionary(value);
+        }
+    }
+
+    public class DebugNoLoadResourceControl : IResourceControl
+    {
+        public Dictionary<string, Dictionary<string, string>> loaded_inventory_item_files { get; set; } = new();
+    }
+
     public static ItemManager Instance { get; } = new ItemManager();
 
     private Dictionary<string, Item> _items = new();
     private Dictionary<string, Item> _queuedItems = new();
     private HashSet<string> _removedBaseItems = new();
+
+    // TEST-ONLY: Spoof a fake ResourceControl for HAModHelper.Tests to use
+    public IResourceControl? DebugResourceControlSource { get; set; }
+
     private ItemManager()
     {
 
+    }
+
+    // helper used by methods to obtain a proxy object
+    private IResourceControl? GetResourceControl()
+    {
+        if (DebugResourceControlSource?.GetType() == typeof(DebugNoLoadResourceControl))
+            return null; // don't
+
+        if (DebugResourceControlSource != null)
+            return DebugResourceControlSource;
+
+        // runtime path: try to locate the game object
+        var rc = UnityEngine.Object.FindObjectOfType<ResourceControl>();
+        if (rc == null) return null;
+        return new UnityResourceControl(rc);
+    }
+
+    // TEST-ONLY: Reset system state.
+    public void Reset()
+    {
+        _items = [];
+        _queuedItems = [];
+        _removedBaseItems = [];
+        DebugResourceControlSource = null;
     }
 
     public void Initialize()
@@ -129,7 +217,7 @@ public sealed class ItemManager
         _items.Remove(item.Id);
 
         if (item.ModId == "base")
-            _removedBaseItems.Add(item.Id);
+            _removedBaseItems.Add(item.ItemId);
 
         RemoveFromGameCache(item.Id);
     }
@@ -142,7 +230,7 @@ public sealed class ItemManager
 
     public Item? GetItem(string fullId)
     {
-        var rc = UnityEngine.Object.FindObjectOfType<ResourceControl>();
+        var rcProxy = GetResourceControl();
 
         // Normalize "base:foo" → "foo"
         var lookupId = fullId.StartsWith("base:", StringComparison.OrdinalIgnoreCase)
@@ -152,7 +240,7 @@ public sealed class ItemManager
         if (_items.TryGetValue(fullId, out var modItem))
             return modItem;
 
-        if (rc.loaded_inventory_item_files != null && rc.loaded_inventory_item_files.TryGetValue(lookupId, out var gameFields))
+        if (rcProxy?.loaded_inventory_item_files != null && rcProxy.loaded_inventory_item_files.TryGetValue(lookupId, out var gameFields))
         {
             var item = ItemConverter.FromGameFields(lookupId, gameFields);
             return item;
@@ -168,23 +256,33 @@ public sealed class ItemManager
 
     public void TryInjectIntoGameCache(string id, Item item)
     {
-        try {
-        var rc = UnityEngine.Object.FindObjectOfType<ResourceControl>();
-
-        rc.loaded_inventory_item_files[id] = ConvertItem(item);
-        } catch (Exception)
+        var rcProxy = GetResourceControl();
+        if (rcProxy == null)
         {
-            MelonLogger.Msg($"[HAMH] ResourceControl not ready, queuing item {id}");
-            // queue for when ResourceControl spawns
+            try { MelonLogger.Msg($"[HAMH] ResourceControl not ready, queuing item {id}"); } catch { }
+            _queuedItems[id] = item;
+            return;
+        }
+
+        try
+        {
+            rcProxy.loaded_inventory_item_files[id] = ConvertItem(item);
+        }
+        catch (Exception)
+        {
+            // if something unexpected happened we still queue to avoid losing the item
+            try { MelonLogger.Msg($"[HAMH] ResourceControl threw, queuing item {id}"); } catch { }
             _queuedItems[id] = item;
         }
     }
 
     public void RemoveFromGameCache(string id)
     {
-        var rc = UnityEngine.Object.FindObjectOfType<ResourceControl>();
+        var rcProxy = GetResourceControl();
+        if (rcProxy == null)
+            return;
 
-        rc.loaded_inventory_item_files.Remove(id);
+        rcProxy.loaded_inventory_item_files.Remove(id);
     }
 
     public void ProcessQueuedItems()
@@ -194,16 +292,26 @@ public sealed class ItemManager
         foreach (var kvp in _queuedItems)
         {
             processedItem = true;
-            MelonLogger.Msg($"[HAMH] Processing queued item {kvp.Key}");
+            try
+            {
+                MelonLogger.Msg($"[HAMH] Processing queued item {kvp.Key}");
+            }
+            catch { }
+            ;
             TryInjectIntoGameCache(kvp.Key, kvp.Value);
         }
         _queuedItems.Clear();
         watch.Stop();
         if (processedItem)
-            MelonLogger.Msg($"[HAMH] Processed queued items in {watch.ElapsedMilliseconds}ms.");
+            try
+            {
+                MelonLogger.Msg($"[HAMH] Processed queued items in {watch.ElapsedMilliseconds}ms.");
+            }
+            catch { }
+        ;
     }
 
-    public Il2CppSystem.Collections.Generic.Dictionary<string, string> ConvertItem(Item item)
+    public Dictionary<string, string> ConvertItem(Item item)
     {
         return ItemConverter.ToGameFields(item);
     }
