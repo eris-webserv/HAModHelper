@@ -99,6 +99,8 @@ public sealed class ItemManager
     public static ItemManager Instance { get; } = new ItemManager();
 
     private Dictionary<string, Item> _items = new();
+
+    private Dictionary<string, Item> _queuedItems = new();
     private HashSet<string> _removedBaseItems = new();
 
     private ItemManager()
@@ -162,9 +164,15 @@ public sealed class ItemManager
 
     public void TryInjectIntoGameCache(string id, Item item)
     {
+        try {
         var rc = UnityEngine.Object.FindObjectOfType<ResourceControl>();
 
         rc.loaded_inventory_item_files[id] = ConvertItem(item);
+        } catch (Exception)
+        {
+            // queue for when ResourceControl spawns
+            _queuedItems[id] = item;
+        }
     }
 
     public void RemoveFromGameCache(string id)
@@ -172,6 +180,15 @@ public sealed class ItemManager
         var rc = UnityEngine.Object.FindObjectOfType<ResourceControl>();
 
         rc.loaded_inventory_item_files.Remove(id);
+    }
+
+    public void ProcessQueuedItems()
+    {
+        foreach (var kvp in _queuedItems)
+        {
+            TryInjectIntoGameCache(kvp.Key, kvp.Value);
+        }
+        _queuedItems.Clear();
     }
 
     public Il2CppSystem.Collections.Generic.Dictionary<string, string> ConvertItem(Item item)
