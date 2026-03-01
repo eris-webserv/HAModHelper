@@ -152,7 +152,11 @@ public sealed class ItemManager
         public Dictionary<string, Dictionary<string, string>> loaded_inventory_item_files
         {
             get => ItemConverter.NormalizeHybridItemDictionary(_rc.loaded_inventory_item_files);
-            set => _rc.loaded_inventory_item_files = ItemConverter.DenormalizeHybridItemDictionary(value);
+            set {
+                MelonLogger.Msg("Saving new data", JsonConvert.SerializeObject(value));
+                _rc.loaded_inventory_item_files = ItemConverter.DenormalizeHybridItemDictionary(value);
+                MelonLogger.Msg("Saved data", JsonConvert.SerializeObject(_rc.loaded_inventory_item_files));
+            }
         }
     }
 
@@ -169,6 +173,7 @@ public sealed class ItemManager
 
     // TEST-ONLY: Spoof a fake ResourceControl for HAModHelper.Tests to use
     public IResourceControl? DebugResourceControlSource { get; set; }
+    private IResourceControl? CurrentResourceControl { get; set; } = null;
     private ItemManager() { }
 
     // helper used by methods to obtain a proxy object
@@ -178,12 +183,16 @@ public sealed class ItemManager
             return null; // don't
 
         if (DebugResourceControlSource != null)
+        {
+            CurrentResourceControl = DebugResourceControlSource;
             return DebugResourceControlSource;
+        }
 
         // runtime path: try to locate the game object
         var rc = UnityEngine.Object.FindObjectOfType<ResourceControl>();
         if (rc == null) return null;
-        return new UnityResourceControl(rc);
+        CurrentResourceControl = new UnityResourceControl(rc);
+        return CurrentResourceControl;
     }
 
     // TEST-ONLY: Reset system state.
@@ -224,7 +233,7 @@ public sealed class ItemManager
 
     public Item? GetItem(string fullId)
     {
-        var rcProxy = GetResourceControl();
+        var rcProxy = CurrentResourceControl ?? GetResourceControl();
 
         // Normalize "base:foo" → "foo"
         var lookupId = fullId.StartsWith("base:", StringComparison.OrdinalIgnoreCase)
@@ -243,6 +252,11 @@ public sealed class ItemManager
         return null;
     }
 
+    public bool IsBaseItem(string id)
+    {
+        return !_items.ContainsKey(id);
+    }
+
     public bool IsBaseItemBlocked(string id)
         => _removedBaseItems.Contains(id);
 
@@ -250,7 +264,7 @@ public sealed class ItemManager
 
     public void TryInjectIntoGameCache(string id, Item item)
     {
-        var rcProxy = GetResourceControl();
+        var rcProxy = CurrentResourceControl ?? GetResourceControl();
         if (rcProxy == null)
         {
             try { MelonLogger.Msg($"[HAMH] ResourceControl not ready, queuing item {id}"); } catch { }
@@ -258,12 +272,9 @@ public sealed class ItemManager
             return;
         }
 
-        MelonLogger.Msg(JsonConvert.SerializeObject(rcProxy.loaded_inventory_item_files));
-
         try
         {
             rcProxy.loaded_inventory_item_files[id] = ConvertItem(item);
-            MelonLogger.Msg(JsonConvert.SerializeObject(rcProxy.loaded_inventory_item_files));
         }
         catch (Exception)
         {
@@ -275,7 +286,7 @@ public sealed class ItemManager
 
     public void RemoveFromGameCache(string id)
     {
-        var rcProxy = GetResourceControl();
+        var rcProxy = CurrentResourceControl ?? GetResourceControl();
         if (rcProxy == null)
             return;
 
