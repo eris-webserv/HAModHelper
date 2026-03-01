@@ -1,8 +1,6 @@
-using System.Reflection;
-using HarmonyLib;
 using Il2Cpp;
-using Il2CppSystem.Security.Cryptography;
 using MelonLoader;
+using Newtonsoft.Json;
 
 namespace HAModHelper.GamePlugin.Items;
 
@@ -154,7 +152,7 @@ public sealed class ItemManager
         public Dictionary<string, Dictionary<string, string>> loaded_inventory_item_files
         {
             get => ItemConverter.NormalizeHybridItemDictionary(_rc.loaded_inventory_item_files);
-            set => ItemConverter.DenormalizeHybridItemDictionary(value);
+            set => _rc.loaded_inventory_item_files = ItemConverter.DenormalizeHybridItemDictionary(value);
         }
     }
 
@@ -260,9 +258,12 @@ public sealed class ItemManager
             return;
         }
 
+        MelonLogger.Msg(JsonConvert.SerializeObject(rcProxy.loaded_inventory_item_files));
+
         try
         {
             rcProxy.loaded_inventory_item_files[id] = ConvertItem(item);
+            MelonLogger.Msg(JsonConvert.SerializeObject(rcProxy.loaded_inventory_item_files));
         }
         catch (Exception)
         {
