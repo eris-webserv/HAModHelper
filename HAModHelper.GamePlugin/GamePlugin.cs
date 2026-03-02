@@ -11,7 +11,7 @@ namespace HAModHelper.GamePlugin.Core;
 
 internal class HAMHMod : MelonPlugin
 {
-    public override void OnInitializeMelon()
+    public override void OnApplicationEarlyStart()
     {
         MelonLogger.Msg("[HAMH] Initializing subsystems...");
         var stopwatch = Stopwatch.StartNew();
@@ -20,7 +20,7 @@ internal class HAMHMod : MelonPlugin
         MelonLogger.Msg($"[HAMH] Initialized ItemManager in {stopwatch.ElapsedMilliseconds}ms.");
 
         MelonLogger.Msg("[HAMH] Applying Harmony patches...");
-        HarmonyInstance.PatchAll();
+        HarmonyInstance.PatchAll(MelonAssembly.Assembly);
 
         var patches = HarmonyInstance.GetPatchedMethods();
         MelonLogger.Msg($"[HAMH] Applied {patches.Count()} Harmony patches.");
@@ -32,6 +32,7 @@ internal class HAMHMod : MelonPlugin
             Name = "Minos Prime",
             Description = "debug test item",
             SpritePath = "item egg",
+            StackLimit = 10,
         });
 
         MelonLogger.Msg("[HAMH] Initialization complete.");
