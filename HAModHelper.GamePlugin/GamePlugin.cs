@@ -4,6 +4,7 @@ using HAModHelper.GamePlugin.Items;
 using System.Diagnostics;
 using HarmonyLib;
 using UnityEngine;
+using Microsoft.VisualBasic;
 
 namespace HAModHelper.GamePlugin.Core;
 
@@ -63,6 +64,23 @@ internal class HAMHMod : MelonPlugin
 
             mgr.ProcessQueuedItems();
 
+            var isBaseItem = mgr.IsBaseItem(item_name);
+
+            if (isBaseItem)
+            {
+                if (mgr.IsBaseItemBlocked(item_name))
+                {
+                    MelonLogger.Msg($"[HAMH] Blocking base game item {item_name}");
+                    __result = false;
+                    return false;
+                }
+                else
+                {
+                    MelonLogger.Msg($"[HAMH] Ignoring base game item {item_name}");
+                    return true; // Let the game handle the rest from here...
+                }
+            }
+
             var item = mgr.GetItem(item_name);
             if (item != null)
             {
@@ -71,15 +89,8 @@ internal class HAMHMod : MelonPlugin
                 __result = true;
                 return false;
             }
-
-            if (mgr.IsBaseItemBlocked(item_name))
-            {
-                MelonLogger.Msg($"[HAMH] Blocking base game item {item_name}");
-                __result = false;
-                return false;
-            }
-
-            MelonLogger.Msg($"[HAMH] No modded item found for {item_name}");
+            
+            MelonLogger.Msg($"[HAMH] No item found for {item_name}");
             return true; // Let the game handle the rest from here...
         }
     }
