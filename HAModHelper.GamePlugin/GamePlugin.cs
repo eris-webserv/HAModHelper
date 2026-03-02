@@ -5,6 +5,7 @@ using System.Diagnostics;
 using HarmonyLib;
 using UnityEngine;
 using Microsoft.VisualBasic;
+using HAModHelper.GamePlugin.Items.Systems;
 
 namespace HAModHelper.GamePlugin.Core;
 
