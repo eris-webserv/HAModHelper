@@ -162,10 +162,16 @@ public sealed class ItemManager
         }
 
         // runtime path: try to locate the game object
-        var rc = UnityEngine.Object.FindObjectOfType<ResourceControl>();
-        if (rc == null) return null;
-        MelonLogger.Msg("[HAMH] ResourceControl found, initializing proxy");
-        return new UnityResourceControl(rc);
+        try
+        {
+            var rc = UnityEngine.Object.FindObjectOfType<ResourceControl>();
+            if (rc == null) return null;
+            return new UnityResourceControl(rc);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     // TEST-ONLY: Reset system state.
