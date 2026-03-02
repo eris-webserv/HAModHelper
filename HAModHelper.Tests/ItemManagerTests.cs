@@ -1,5 +1,6 @@
 using System;
-using HAModHelper.GamePlugin.Items;
+using HAModHelper.GamePlugin.Items.Interfaces;
+using HAModHelper.GamePlugin.Items.Systems;
 using Xunit;
 
 namespace HAModHelper.Tests
@@ -7,7 +8,7 @@ namespace HAModHelper.Tests
     // we reference internal helpers from the library via InternalsVisibleTo
     public class ItemManagerTests
     {
-        private class FakeResourceControl : ItemManager.IResourceControl
+        private class FakeResourceControl : IResourceControl
         {
             public Dictionary<string, Dictionary<string, string>> loaded_inventory_item_files { get; set; }
                 = new Dictionary<string, Dictionary<string, string>>();
@@ -66,7 +67,7 @@ namespace HAModHelper.Tests
         public void QueuedItemsAreProcessedWhenResourceControlBecomesAvailable()
         {
             var im = ItemManager.Instance;
-            im.DebugResourceControlSource = new ItemManager.DebugNoLoadResourceControl();
+            im.DebugResourceControlSource = new DebugNoLoadResourceControl();
             var item = new Item { ModId = "mod", ItemId = "queued", Name = "Q" };
             im.AddItem(item);
 
