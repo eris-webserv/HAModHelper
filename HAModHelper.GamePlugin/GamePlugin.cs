@@ -109,7 +109,7 @@ internal class HAMHMod : MelonPlugin
 
             if (modItem != null)
             {
-                MelonLogger.Msg($"[HAMH] Returning modded name for {item.item_name}");
+                MelonLogger.Msg($"[HAMH] Returning modded name for {item.item_name}: {modItem.Name}");
                 __result = modItem.Name;
                 return false;
             }
