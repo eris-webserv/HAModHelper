@@ -13,17 +13,13 @@ internal class HAMHMod : MelonPlugin
 {
     public override void OnApplicationEarlyStart()
     {
+        base.OnApplicationEarlyStart();
+
         MelonLogger.Msg("[HAMH] Initializing subsystems...");
         var stopwatch = Stopwatch.StartNew();
         ItemManager.Instance.Initialize();
         stopwatch.Stop();
         MelonLogger.Msg($"[HAMH] Initialized ItemManager in {stopwatch.ElapsedMilliseconds}ms.");
-
-        MelonLogger.Msg("[HAMH] Applying Harmony patches...");
-        HarmonyInstance.PatchAll(MelonAssembly.Assembly);
-
-        var patches = HarmonyInstance.GetPatchedMethods();
-        MelonLogger.Msg($"[HAMH] Applied {patches.Count()} Harmony patches.");
 
         ItemManager.Instance.AddItem(new Item
         {
@@ -35,9 +31,20 @@ internal class HAMHMod : MelonPlugin
             StackLimit = 10,
         });
 
-        MelonLogger.Msg("[HAMH] Initialization complete.");
+        MelonLogger.Msg("[HAMH] Early initialization complete.");
 
         MelonEvents.OnGUI.Subscribe(DrawMenu, 100); // The higher the value, the lower the priority.
+    }
+
+    public override void OnInitializeMelon()
+    {
+        base.OnInitializeMelon();
+
+        MelonLogger.Msg("[HAMH] Applying Harmony patches...");
+        HarmonyInstance.PatchAll(MelonAssembly.Assembly);
+
+        var patches = HarmonyInstance.GetPatchedMethods();
+        MelonLogger.Msg($"[HAMH] Applied {patches.Count()} Harmony patches.");
     }
 
     private void DrawMenu()
