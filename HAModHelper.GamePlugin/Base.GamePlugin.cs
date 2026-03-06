@@ -1,64 +1,54 @@
 ﻿using MelonLoader;
 using Il2Cpp;
-using HAModHelper.GamePlugin.Items;
 using System.Diagnostics;
 using HarmonyLib;
 using UnityEngine;
-using Microsoft.VisualBasic;
 using HAModHelper.GamePlugin.Items.Systems;
+using HAModHelper.GamePlugin.Perks.Systems;
+using HAModHelper.GamePlugin.Debug;
 
 namespace HAModHelper.GamePlugin.Core;
 
 internal class HAMHMod : MelonPlugin
 {
-    public override void OnApplicationEarlyStart()
+    public override void OnApplicationStarted()
     {
-        base.OnApplicationEarlyStart();
+        base.OnApplicationStarted();
 
         MelonLogger.Msg("[HAMH] Initializing subsystems...");
+
+        // Subsystem init
         var stopwatch = Stopwatch.StartNew();
         ItemManager.Instance.Initialize();
         stopwatch.Stop();
         MelonLogger.Msg($"[HAMH] Initialized ItemManager in {stopwatch.ElapsedMilliseconds}ms.");
 
-        ItemManager.Instance.AddItem(new Item
-        {
-            ModId = "hamltest",
-            ItemId = "minosprime",
-            Name = "Minos Prime",
-            Description = "debug test item",
-            SpritePath = "item egg",
-            StackLimit = 10,
-        });
+        var stopwatch2 = Stopwatch.StartNew();
+        PerkManager.Instance.Initialize();
+        stopwatch.Stop();
+        MelonLogger.Msg($"[HAMH] Initialized PerkManager in {stopwatch2.ElapsedMilliseconds}ms.");
+
+        // Patch init
+        MelonLogger.Msg("[HAMH] Applying Harmony patches...");
+        HarmonyInstance.PatchAll(MelonAssembly.Assembly);
+        var patches = HarmonyInstance.GetPatchedMethods();
+        MelonLogger.Msg($"[HAMH] Applied {patches.Count()} Harmony patches.");
 
         MelonLogger.Msg("[HAMH] Early initialization complete.");
 
-        MelonEvents.OnGUI.Subscribe(DrawMenu, 100); // The higher the value, the lower the priority.
+        // Debug init
+        #if DEBUG
+            MelonLogger.Msg("[HAMH] Running DebugHelper (use Release plugin to disable this!)");
+            DebugHelper.Initialize();
+        #endif
+
     }
 
-    public override void OnInitializeMelon()
+    private static void DebugLog(string toLog)
     {
-        base.OnInitializeMelon();
-
-        MelonLogger.Msg("[HAMH] Applying Harmony patches...");
-        HarmonyInstance.PatchAll(MelonAssembly.Assembly);
-
-        var patches = HarmonyInstance.GetPatchedMethods();
-        MelonLogger.Msg($"[HAMH] Applied {patches.Count()} Harmony patches.");
-    }
-
-    private void DrawMenu()
-    {
-        GUI.Box(new Rect(0, 0, 300, 200), "Test Menu");
-        // button that gives you item "hamltest:minosprime"
-        if (GUI.Button(new Rect(10, 30, 280, 30), "Give Minos Prime"))
-        {
-            var ictr = UnityEngine.Object.FindObjectOfType<inventory_ctr>();
-            if (ictr != null)
-            {
-                ictr.GiveItem("hamltest:minosprime", 1, null);
-            }
-        }
+        #if DEBUG
+            MelonLogger.Msg(toLog);
+        #endif
     }
 
     [HarmonyPatch(typeof(ResourceControl), "TryLoadInventoryItem", new Type[] { typeof(string) })]
@@ -67,7 +57,7 @@ internal class HAMHMod : MelonPlugin
         [HarmonyPrefix]
         static bool Prefix(string item_name, ref bool __result)
         {
-            MelonLogger.Msg("[HAMH] TryLoadInventoryItem called for item: " + item_name);
+            DebugLog($"[HAMH] TryLoadInventoryItem called for item: ${item_name}");
 
             var mgr = ItemManager.Instance;
 
@@ -79,13 +69,13 @@ internal class HAMHMod : MelonPlugin
             {
                 if (mgr.IsBaseItemBlocked(item_name))
                 {
-                    MelonLogger.Msg($"[HAMH] Blocking base game item {item_name}");
+                    DebugLog($"[HAMH] Blocking base game item {item_name}");
                     __result = false;
                     return false;
                 }
                 else
                 {
-                    MelonLogger.Msg($"[HAMH] Ignoring base game item {item_name}");
+                    DebugLog($"[HAMH] Ignoring base game item {item_name}");
                     return true; // Let the game handle the rest from here...
                 }
             }
@@ -93,13 +83,13 @@ internal class HAMHMod : MelonPlugin
             var item = mgr.GetItem(item_name);
             if (item != null)
             {
-                MelonLogger.Msg($"[HAMH] Providing modded item for {item_name}");
+                DebugLog($"[HAMH] Providing modded item for {item_name}");
                 mgr.TryInjectIntoGameCache(item_name, item);
                 __result = true;
                 return false;
             }
-            
-            MelonLogger.Msg($"[HAMH] No item found for {item_name}");
+
+            DebugLog($"[HAMH] No item found for {item_name}");
             return true; // Let the game handle the rest from here...
         }
     }
@@ -110,7 +100,7 @@ internal class HAMHMod : MelonPlugin
         [HarmonyPrefix]
         static bool Prefix(string item_name, int count, string fn_validator, bool visual)
         {
-            MelonLogger.Msg("[HAMH] GiveItem called for " + item_name);
+            DebugLog("[HAMH] GiveItem called for " + item_name);
             return true; // Let the game handle the rest from here...
         }
     }
@@ -121,7 +111,7 @@ internal class HAMHMod : MelonPlugin
         [HarmonyPrefix]
         static bool Prefix(InventoryItem item, ref string __result)
         {
-            MelonLogger.Msg("[HAMH] GetFullItemName called for item: " + item.item_name);
+            DebugLog("[HAMH] GetFullItemName called for item: " + item.item_name);
 
             var mgr = ItemManager.Instance;
 
@@ -129,12 +119,12 @@ internal class HAMHMod : MelonPlugin
 
             if (modItem != null)
             {
-                MelonLogger.Msg($"[HAMH] Returning modded name for {item.item_name}: {modItem.Name}");
+                DebugLog($"[HAMH] Returning modded name for {item.item_name}: {modItem.Name}");
                 __result = modItem.Name;
                 return false;
             }
 
-            MelonLogger.Msg($"[HAMH] No modded item found for {item.item_name}");
+            DebugLog($"[HAMH] No modded item found for {item.item_name}");
 
             return true; // Let the game handle the rest from here...
         }

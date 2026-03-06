@@ -1,5 +1,4 @@
-using System;
-using HAModHelper.Events;
+using HAModHelper.GamePlugin.Base.Events;
 using Xunit;
 
 namespace HAModHelper.Tests
