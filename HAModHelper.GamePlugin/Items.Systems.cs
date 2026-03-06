@@ -1,8 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
+using HAModHelper.GamePlugin.Helpers;
 using HAModHelper.GamePlugin.Items.Interfaces;
 using Il2Cpp;
 using MelonLoader;
-using Newtonsoft.Json;
 
 namespace HAModHelper.GamePlugin.Items.Systems;
 
@@ -36,27 +35,11 @@ public enum ItemActions
 
 public static class ItemConverter
 {
-    public static Dictionary<T1, T2> NormalizeIL2CPPDictionary<T1, T2>(Il2CppSystem.Collections.Generic.Dictionary<T1, T2> dict) where T1 : notnull
-    {
-        var d = new Dictionary<T1, T2>();
-        foreach (var kvp in dict)
-            d[kvp.Key] = kvp.Value;
-        return d;
-    }
-
     public static Dictionary<string, Dictionary<string, string>> NormalizeHybridItemDictionary(Il2CppSystem.Collections.Generic.Dictionary<string, Il2CppSystem.Collections.Generic.Dictionary<string, string>> dict)
     {
         var d = new Dictionary<string, Dictionary<string, string>>();
         foreach (var kvp in dict)
-            d[kvp.Key] = NormalizeIL2CPPDictionary(kvp.Value);
-        return d;
-    }
-
-    public static Il2CppSystem.Collections.Generic.Dictionary<T1, T2> DenormalizeIL2CPPDictionary<T1, T2>(Dictionary<T1, T2> dict) where T1 : notnull
-    {
-        var d = new Il2CppSystem.Collections.Generic.Dictionary<T1, T2>();
-        foreach (var kvp in dict)
-            d[kvp.Key] = kvp.Value;
+            d[kvp.Key] = DictHelper.NormalizeIL2CPPDictionary(kvp.Value);
         return d;
     }
 
@@ -65,11 +48,10 @@ public static class ItemConverter
         var d = new Il2CppSystem.Collections.Generic.Dictionary<string, Il2CppSystem.Collections.Generic.Dictionary<string, string>>();
         foreach (var kvp in dict)
         {
-            d[kvp.Key] = DenormalizeIL2CPPDictionary(kvp.Value);
+            d[kvp.Key] = DictHelper.DenormalizeIL2CPPDictionary(kvp.Value);
         }
         return d;
     }
-
     public static Dictionary<string, string> ToGameFields(Item item)
     {
         var d = new Dictionary<string, string>();
@@ -130,7 +112,7 @@ public static class ItemConverter
         return item;
     }
 
-    private static (string modId, string id) SplitFullId(string fullId)
+    public static (string modId, string id) SplitFullId(string fullId)
     {
         var idx = fullId.IndexOf(':');
         if (idx <= 0) return ("base", fullId);
@@ -238,7 +220,8 @@ public sealed class ItemManager
 
     public bool IsBaseItem(string id)
     {
-        return !_items.ContainsKey(id);
+        var split = ItemConverter.SplitFullId(id);
+        return split.modId == "base";
     }
 
     public bool IsBaseItemBlocked(string id)

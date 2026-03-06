@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using HAModHelper.GamePlugin.Helpers;
 using HAModHelper.GamePlugin.Items.Systems;
 using Il2Cpp;
 
@@ -42,7 +43,7 @@ public class UnityResourceControl : IResourceControl
 
     public void SetItem(string id, Dictionary<string, string> fields)
     {
-        _rc.loaded_inventory_item_files[id] = ItemConverter.DenormalizeIL2CPPDictionary(fields);
+        _rc.loaded_inventory_item_files[id] = DictHelper.DenormalizeIL2CPPDictionary(fields);
     }
 
     public void RemoveItem(string id)

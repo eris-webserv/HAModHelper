@@ -1,0 +1,1 @@
+namespace HAModHelper.GamePlugin.Items.Events;

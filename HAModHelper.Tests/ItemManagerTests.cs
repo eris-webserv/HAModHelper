@@ -1,4 +1,3 @@
-using System;
 using HAModHelper.GamePlugin.Items.Interfaces;
 using HAModHelper.GamePlugin.Items.Systems;
 using Xunit;
