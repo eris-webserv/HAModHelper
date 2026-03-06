@@ -15,6 +15,8 @@ internal class HAMHMod : MelonPlugin
     {
         base.OnApplicationStarted();
 
+        MelonLogger.Msg($"[HAMH] Launching with mod version {Info.Version}, hash {MelonAssembly.Hash}");
+
         MelonLogger.Msg("[HAMH] Initializing subsystems...");
 
         // Subsystem init
@@ -57,7 +59,7 @@ internal class HAMHMod : MelonPlugin
         [HarmonyPrefix]
         static bool Prefix(string item_name, ref bool __result)
         {
-            DebugLog($"[HAMH] TryLoadInventoryItem called for item: ${item_name}");
+            DebugLog($"[HAMH] TryLoadInventoryItem called for item: {item_name}");
 
             var mgr = ItemManager.Instance;
 

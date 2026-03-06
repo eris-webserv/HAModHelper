@@ -38,11 +38,16 @@ public static class DebugHelper
         }
         if (GUI.Button(new Rect(10, 50, 280, 30), "Distort"))
         {
+            try {
             var pctr = UnityEngine.Object.FindObjectOfType<PerkControl>();
             MelonLogger.Msg("Distorting...");
             foreach (var perk in pctr.loaded_perks)
             {
-               MelonLogger.Msg("Perk key:", perk.Key, "Data:", DictHelper.NormalizeIL2CPPDictionary(perk.Value.all_effects));
+               MelonLogger.Msg($"Perk key: {perk.Key}, Data: {JsonConvert.SerializeObject(DictHelper.NormalizeIL2CPPDictionary(DictHelper.NormalizeIL2CPPDictionary(perk.Value.all_effects).First().Value.data))}");
+            }
+            } catch (Exception)
+            {
+                MelonLogger.Msg("blawg... im cryine...");
             }
         }
     }
