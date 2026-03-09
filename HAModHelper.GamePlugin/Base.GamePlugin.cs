@@ -53,6 +53,26 @@ internal class HAMHMod : MelonPlugin
         #endif
     }
 
+    [HarmonyPatch(typeof(AdvertControl), "LoadInterstitialAd")]
+    private static class IHateAds
+    {
+        static bool Prefix()
+        {
+            DebugLog("Blocked an ad");
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(AdvertControl), "ShowInterstitial")]
+    private static class IReallyHateAds
+    {
+        static bool Prefix()
+        {
+            DebugLog("Blocked an ad");
+            return false;
+        }
+    }
+
     [HarmonyPatch(typeof(ResourceControl), "TryLoadInventoryItem", new Type[] { typeof(string) })]
     private static class TryLoadInventoryItemPatch
     {

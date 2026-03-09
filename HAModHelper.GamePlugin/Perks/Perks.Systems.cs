@@ -13,8 +13,8 @@ public class Perk
 
     public required string Name { get; set; }
     public required string Description { get; set; }
-    public string? DetailedDescription { get; set; }
-
+    public required string DetailedDescription { get; set; }
+    public string? UltraDetailedDescription { get; set; }
     public Dictionary<string, SinglePerkEffect>? PerkEffects { get; set; }
 
 }
@@ -49,10 +49,9 @@ public static class PerkConverter
             PerkId = id,
             Name = data.full_name,
             Description = data.description,
+            DetailedDescription = data.detailed_description,
             PerkEffects = DictHelper.NormalizeIL2CPPDictionary(data.all_effects)
         };
-
-        perk.DetailedDescription = data.detailed_description ?? data.description;
 
         return perk;
     }
