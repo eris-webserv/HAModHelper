@@ -70,7 +70,7 @@ public static class PerkConverter
 
 public sealed class PerkManager
 {
-    public static PerkManager Instance { get; } = new PerkManager();
+    public static PerkManager Instance => new PerkManager();
 
     private Dictionary<string, Perk> _perks = new();
     private Dictionary<string, Perk> _queuedPerks = new();
@@ -80,8 +80,6 @@ public sealed class PerkManager
     public IPerkControl? DebugPerkControlSource { get; set; }
     
     private PerkManager() { }
-
-    /// <summary>Helper to get the current perk control proxy (game or debug).</summary>
     private IPerkControl? GetPerkControl()
     {
         if (DebugPerkControlSource?.GetType() == typeof(DebugNoLoadPerkControl))
