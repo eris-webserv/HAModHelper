@@ -8,6 +8,7 @@ using HAModHelper.GamePlugin.Perks.Systems;
 using HAModHelper.GamePlugin.Debug;
 using System.Reflection;
 using HAModHelper.GamePlugin.Core.Debug;
+using System.Linq.Expressions;
 
 namespace HAModHelper.GamePlugin.Core;
 
@@ -24,7 +25,7 @@ internal class HAMHMod : MelonPlugin
         MelonLogger.Msg($"[HAMH] Launching with mod version {Info.Version}, hash {MelonAssembly.Hash}");
 
         MelonLogger.Msg("[HAMH] Initializing subsystems...");
-
+        try {
         // Subsystem init
         var stopwatch = Stopwatch.StartNew();
         ItemManager.Instance.Initialize();
@@ -33,8 +34,23 @@ internal class HAMHMod : MelonPlugin
 
         var stopwatch2 = Stopwatch.StartNew();
         PerkManager.Instance.Initialize();
-        stopwatch.Stop();
+        stopwatch2.Stop();
         MelonLogger.Msg($"[HAMH] Initialized PerkManager in {stopwatch2.ElapsedMilliseconds}ms.");
+
+        var stopwatch3 = Stopwatch.StartNew();
+        UniverseLib.Config.UniverseLibConfig config = new()
+        {
+            Force_Unlock_Mouse = true // no idea if this'll do anything but this feels prudent for Android.
+        };
+        UniverseLib.Universe.Init(1f, null, null, config);
+        stopwatch3.Stop();
+        MelonLogger.Msg($"[HAMH] Initialized UniverseLib in {stopwatch3.ElapsedMilliseconds}ms.");
+        } catch (Exception ex)
+        {
+            MelonLogger.Error("[HAMH] Something went terribly wrong during systems initialization, please contact the developer! Crash log writing to crash.txt");
+
+            // No
+        }
 
         // Patch init
         MelonLogger.Msg("[HAMH] Applying Harmony patches...");
@@ -45,18 +61,18 @@ internal class HAMHMod : MelonPlugin
         MelonLogger.Msg("[HAMH] Early initialization complete.");
 
         // Debug init
-        #if DEBUG
-            MelonLogger.Msg("[HAMH] Running DebugHelper (use Release plugin to disable this!)");
-            DebugHelper.Initialize();
-        #endif
+#if DEBUG
+        MelonLogger.Msg("[HAMH] Running DebugHelper (use Release plugin to disable this!)");
+        DebugHelper.Initialize();
+#endif
 
     }
 
     private static void DebugLog(string toLog)
     {
-        #if DEBUG
-            MelonLogger.Msg(toLog);
-        #endif
+#if DEBUG
+        MelonLogger.Msg(toLog);
+#endif
     }
 
     [HarmonyPatch(typeof(AdvertControl), "LoadInterstitialAd")]
