@@ -14,7 +14,7 @@ internal static class AssemblyManager
             return null!;
         }
 
-        string name = "HAMH.Resources." + args.Name[..args.Name.IndexOf(',')] + ".dll";
+        string name = "HAModHelper.GamePlugin.Resources." + args.Name[..args.Name.IndexOf(',')] + ".dll";
         using Stream? str = Assembly.GetExecutingAssembly().GetManifestResourceStream(name);
         if (str is not null)
         {
