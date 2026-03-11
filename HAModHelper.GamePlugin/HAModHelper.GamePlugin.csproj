@@ -45,10 +45,10 @@
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
-	<ItemGroup>
-	  <None Remove="Resources\.dll" />
+	<!--<ItemGroup>
+	  <None Remove="Resources\a.dll" />
 	</ItemGroup>
 	<ItemGroup>
-	  <EmbeddedResource Include="Resources\HPUI.dll" />
-	</ItemGroup>
+	  <EmbeddedResource Include="Resources\a.dll" />
+	</ItemGroup>-->
 </Project>
