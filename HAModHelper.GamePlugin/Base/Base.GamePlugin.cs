@@ -6,11 +6,17 @@ using UnityEngine;
 using HAModHelper.GamePlugin.Items.Systems;
 using HAModHelper.GamePlugin.Perks.Systems;
 using HAModHelper.GamePlugin.Debug;
+using System.Reflection;
+using HAModHelper.GamePlugin.Core.Debug;
 
 namespace HAModHelper.GamePlugin.Core;
 
 internal class HAMHMod : MelonPlugin
 {
+    static HAMHMod()
+    {
+        AssemblyManager.SetOurResolveHandlerAtFront();
+    }
     public override void OnApplicationStarted()
     {
         base.OnApplicationStarted();
