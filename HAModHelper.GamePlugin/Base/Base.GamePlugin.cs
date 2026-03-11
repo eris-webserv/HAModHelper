@@ -6,9 +6,7 @@ using UnityEngine;
 using HAModHelper.GamePlugin.Items.Systems;
 using HAModHelper.GamePlugin.Perks.Systems;
 using HAModHelper.GamePlugin.Debug;
-using System.Reflection;
 using HAModHelper.GamePlugin.Core.Debug;
-using System.Linq.Expressions;
 
 namespace HAModHelper.GamePlugin.Core;
 
@@ -18,54 +16,86 @@ internal class HAMHMod : MelonPlugin
     {
         AssemblyManager.SetOurResolveHandlerAtFront();
     }
-    public override void OnApplicationStarted()
+    public override void OnPreModsLoaded()
     {
         base.OnApplicationStarted();
 
-        MelonLogger.Msg($"[HAMH] Launching with mod version {Info.Version}, hash {MelonAssembly.Hash}");
+        MelonLogger.Msg($"[HAMH] Starting early initialization with mod version {Info.Version}, hash {MelonAssembly.Hash}");
 
         MelonLogger.Msg("[HAMH] Initializing subsystems...");
-        try {
-        // Subsystem init
-        var stopwatch = Stopwatch.StartNew();
-        ItemManager.Instance.Initialize();
-        stopwatch.Stop();
-        MelonLogger.Msg($"[HAMH] Initialized ItemManager in {stopwatch.ElapsedMilliseconds}ms.");
-
-        var stopwatch2 = Stopwatch.StartNew();
-        PerkManager.Instance.Initialize();
-        stopwatch2.Stop();
-        MelonLogger.Msg($"[HAMH] Initialized PerkManager in {stopwatch2.ElapsedMilliseconds}ms.");
-
-        var stopwatch3 = Stopwatch.StartNew();
-        UniverseLib.Config.UniverseLibConfig config = new()
+        try
         {
-            Force_Unlock_Mouse = true // no idea if this'll do anything but this feels prudent for Android.
-        };
-        UniverseLib.Universe.Init(1f, null, null, config);
-        stopwatch3.Stop();
-        MelonLogger.Msg($"[HAMH] Initialized UniverseLib in {stopwatch3.ElapsedMilliseconds}ms.");
-        } catch (Exception ex)
-        {
-            MelonLogger.Error("[HAMH] Something went terribly wrong during systems initialization, please contact the developer! Crash log writing to crash.txt");
 
-            // No
+            // Subsystem init
+            var stopwatch = Stopwatch.StartNew();
+            ItemManager.Instance.Initialize();
+            stopwatch.Stop();
+            MelonLogger.Msg($"[HAMH] Initialized ItemManager in {stopwatch.ElapsedMilliseconds}ms.");
+
+            var stopwatch2 = Stopwatch.StartNew();
+            PerkManager.Instance.Initialize();
+            stopwatch2.Stop();
+            MelonLogger.Msg($"[HAMH] Initialized PerkManager in {stopwatch2.ElapsedMilliseconds}ms.");
+
+            //var stopwatch3 = Stopwatch.StartNew();
+            //UniverseLib.Config.UniverseLibConfig config = new()
+            //{
+            //    Force_Unlock_Mouse = true // no idea if this'll do anything but this feels prudent for Android.
+            //};
+            //UniverseLib.Universe.Init(1f, null, null, config);
+            //stopwatch3.Stop();
+            //MelonLogger.Msg($"[HAMH] Initialized UniverseLib in {stopwatch3.ElapsedMilliseconds}ms.");
+
         }
+        catch (Exception ex)
+        {
+            MelonLogger.Error("[HAMH] Something went terribly wrong during subsystems initialization, please contact the developer! Below is the thrown exception:");
+
+            MelonLogger.Error(ex);
+
+            Application.Quit(1);
+        }
+
+        MelonLogger.Msg("[HAMH] Early initialization complete.");
+    }
+
+    public override void OnInitializeMelon()
+    {
+        base.OnInitializeMelon();
+
+        MelonLogger.Msg("[HAMH] Handling late initialization");
 
         // Patch init
         MelonLogger.Msg("[HAMH] Applying Harmony patches...");
-        HarmonyInstance.PatchAll(MelonAssembly.Assembly);
+        try
+        {
+            HarmonyInstance.PatchAll(MelonAssembly.Assembly);
+        }
+        catch (Exception ex)
+        {
+            MelonLogger.Error("[HAMH] Failed to apply Harmony patches, please contact the developer! Below is the thrown exception:");
+
+            MelonLogger.Error(ex);
+
+            Application.Quit(1);
+        }
         var patches = HarmonyInstance.GetPatchedMethods();
         MelonLogger.Msg($"[HAMH] Applied {patches.Count()} Harmony patches.");
 
-        MelonLogger.Msg("[HAMH] Early initialization complete.");
 
         // Debug init
 #if DEBUG
-        MelonLogger.Msg("[HAMH] Running DebugHelper (use Release plugin to disable this!)");
+        MelonLogger.Msg("[HAMH-DBG] Testing the isEditor patch...");
+        if (!Application.isEditor)
+        {
+            MelonLogger.Error("[HAMH-DBG] Patch to isEditor didn't apply >:/");
+        }
+
+        MelonLogger.Msg("[HAMH-DBG] Running DebugHelper (use Release plugin to disable this!)");
         DebugHelper.Initialize();
 #endif
 
+        MelonLogger.Msg("[HAMH] Late initialization complete.");
     }
 
     private static void DebugLog(string toLog)
@@ -138,16 +168,16 @@ internal class HAMHMod : MelonPlugin
         }
     }
 
-    [HarmonyPatch(typeof(inventory_ctr), "GiveItem", new Type[] { typeof(string), typeof(int), typeof(string), typeof(bool) })]
-    private static class GiveItemPatch
-    {
-        [HarmonyPrefix]
-        static bool Prefix(string item_name, int count, string fn_validator, bool visual)
+    /*  [HarmonyPatch(typeof(inventory_ctr), "GiveItem", new Type[] { typeof(string), typeof(int), typeof(string), typeof(bool) })]
+        private static class GiveItemPatch
         {
-            DebugLog("[HAMH] GiveItem called for " + item_name);
-            return true; // Let the game handle the rest from here...
-        }
-    }
+            [HarmonyPrefix]
+            static bool Prefix(string item_name, int count, string fn_validator, bool visual)
+            {
+                DebugLog("[HAMH] GiveItem called for " + item_name);
+                return true; // Let the game handle the rest from here...
+            }
+        }*/
 
     [HarmonyPatch(typeof(inventory_ctr), "GetFullItemName", new Type[] { typeof(InventoryItem) })]
     private static class GetFullItemNamePatch
@@ -173,4 +203,28 @@ internal class HAMHMod : MelonPlugin
             return true; // Let the game handle the rest from here...
         }
     }
+
+    [HarmonyPatch(typeof(Application), "get_isEditor")]
+    private static class IsEditorPatch
+    {
+        [HarmonyPrefix]
+        static bool Prefix(ref bool __result)
+        {
+            // Wait, why are we spoofing the editor being on? Great question!
+            // DevBuildControl checks for the editor being on in order to enable some debugging UI elements.
+            // So if we do something neat such as Lying in order to make it THINK we're in the editor, we can just... have those elements enable themselves.
+
+            // In theory. I haven't tested this part of the mod yet. I'll have to do that myself. Sigh.
+
+            DebugLog("[HAMH] IsEditor checked");
+
+#if DEBUG
+            __result = true; // Yes indeed we are totally in the editor right now. Don't mind the zombies
+            return false; // And no you can't actually check just trust me bro
+#else 
+            return true; // We're not in the editor actually
+#endif
+        }
+    }
 }
+
