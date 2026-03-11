@@ -41,14 +41,18 @@
       <HintPath>$(MSBuildProjectDirectory)/../LemonLibs/Il2CppAssemblies/Il2Cppmscorlib.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>./Resources/UniverseLib.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
-	<!--<ItemGroup>
-	  <None Remove="Resources\a.dll" />
+	<ItemGroup>
+	  <None Remove="Resources\UniverseLib.dll" />
 	</ItemGroup>
 	<ItemGroup>
-	  <EmbeddedResource Include="Resources\a.dll" />
-	</ItemGroup>-->
+	  <EmbeddedResource Include="Resources\UniverseLib.dll" />
+	</ItemGroup>
 </Project>
