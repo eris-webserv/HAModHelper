@@ -7,7 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HAModHelper.GamePlugin", "H
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HAModHelper.Tests", "HAModHelper.Tests\HAModHelper.Tests.csproj", "{D222712C-7A63-425B-A09A-756ED44AA49B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HAModHelper.IMGUI", "HAModHelper.IMGUI\HAModHelper.IMGUI.csproj", "{205F355E-73C1-4EDD-907D-A21D361D022C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,18 +42,6 @@ Global
 		{D222712C-7A63-425B-A09A-756ED44AA49B}.Release|x64.Build.0 = Release|Any CPU
 		{D222712C-7A63-425B-A09A-756ED44AA49B}.Release|x86.ActiveCfg = Release|Any CPU
 		{D222712C-7A63-425B-A09A-756ED44AA49B}.Release|x86.Build.0 = Release|Any CPU
-		{205F355E-73C1-4EDD-907D-A21D361D022C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{205F355E-73C1-4EDD-907D-A21D361D022C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{205F355E-73C1-4EDD-907D-A21D361D022C}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{205F355E-73C1-4EDD-907D-A21D361D022C}.Debug|x64.Build.0 = Debug|Any CPU
-		{205F355E-73C1-4EDD-907D-A21D361D022C}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{205F355E-73C1-4EDD-907D-A21D361D022C}.Debug|x86.Build.0 = Debug|Any CPU
-		{205F355E-73C1-4EDD-907D-A21D361D022C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{205F355E-73C1-4EDD-907D-A21D361D022C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{205F355E-73C1-4EDD-907D-A21D361D022C}.Release|x64.ActiveCfg = Release|Any CPU
-		{205F355E-73C1-4EDD-907D-A21D361D022C}.Release|x64.Build.0 = Release|Any CPU
-		{205F355E-73C1-4EDD-907D-A21D361D022C}.Release|x86.ActiveCfg = Release|Any CPU
-		{205F355E-73C1-4EDD-907D-A21D361D022C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
