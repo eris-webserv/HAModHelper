@@ -3,8 +3,21 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!--		<GenerateAssemblyInfo>false</GenerateAssemblyInfo> -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Resources\UniverseLib.dll" />
+  </ItemGroup>
+  <!--<ItemGroup>
+    <EmbeddedResource Include="Resources\UniverseLib.dll" />
+  </ItemGroup>-->
+  <ItemGroup>
+<!--    <Reference Include="UniverseLib">
+      <HintPath>./Resources/UniverseLib.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>-->
     <Reference Include="MelonLoader">
       <HintPath>$(MSBuildProjectDirectory)/../LemonLibs/net8/MelonLoader.dll</HintPath>
       <Private>True</Private>
@@ -41,18 +54,8 @@
       <HintPath>$(MSBuildProjectDirectory)/../LemonLibs/Il2CppAssemblies/Il2Cppmscorlib.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Il2Cppmscorlib">
-      <HintPath>./Resources/UniverseLib.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
-	<ItemGroup>
-	  <None Remove="Resources\UniverseLib.dll" />
-	</ItemGroup>
-	<ItemGroup>
-	  <EmbeddedResource Include="Resources\UniverseLib.dll" />
-	</ItemGroup>
 </Project>
