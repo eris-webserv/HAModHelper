@@ -28,9 +28,9 @@ public static class DebugHelper
 
     private static void DrawMenu()
     {
-        GUI.Box(new Rect(0, 0, 200, 200), "Test Menu");
+        GUI.Box(new Rect(200, 0, 200, 200), "Test Menu");
         // button that gives you item "hamltest:minosprime"
-        if (GUI.Button(new Rect(0, 30, 100, 30), "Give Minos Prime"))
+        if (GUI.Button(new Rect(200, 30, 100, 30), "Give Minos Prime"))
         {
             var ictr = UnityEngine.Object.FindObjectOfType<inventory_ctr>();
             if (ictr != null)
@@ -38,7 +38,7 @@ public static class DebugHelper
                 ictr.GiveItem("hamltest:minosprime", 1, null);
             }
         }
-        if (GUI.Button(new Rect(0, 60, 100, 30), "Dump Perks"))
+        if (GUI.Button(new Rect(200, 60, 100, 30), "Dump Perks"))
         {
             try
             {
@@ -53,26 +53,11 @@ public static class DebugHelper
                 MelonLogger.Msg("Something went wrong. You probably tried to dump perks before PerkControl was loaded.");
             }
         }
-        if (GUI.Button(new Rect(0, 90, 100, 30), "Give Genomes"))
+        if (GUI.Button(new Rect(200, 90, 100, 30), "Give Genomes"))
         {
             var pctr = UnityEngine.Object.FindObjectOfType<PerkControl>();
             pctr.genomes = 69420;
             pctr.SaveGenomes();
-        }
-        if (GUI.Button(new Rect(0, 120, 100, 30), "Dump Items"))
-        {
-            var rctr = UnityEngine.Object.FindObjectOfType<ResourceControl>();
-            var data = new JsonObject();
-            foreach (var item in rctr.loaded_inventory_item_files)
-            {
-                data.Add(item.Key, JsonConvert.SerializeObject(DictHelper.NormalizeIL2CPPDictionary(item.Value)));
-            }
-
-            using (StreamWriter writer = new StreamWriter("dumped_items.json"))
-            {
-                writer.Write(data.ToJsonString());
-            }
-            MelonLogger.Msg("[HAMH-DBG] Dumped items to 'dumped_items.json'");
         }
     }
 }

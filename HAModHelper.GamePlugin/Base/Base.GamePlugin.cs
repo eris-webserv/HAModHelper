@@ -7,6 +7,7 @@ using HAModHelper.GamePlugin.Items.Systems;
 using HAModHelper.GamePlugin.Perks.Systems;
 using HAModHelper.GamePlugin.Debug;
 using HAModHelper.GamePlugin.Core.Debug;
+using System.Net;
 
 namespace HAModHelper.GamePlugin.Core;
 
@@ -105,17 +106,17 @@ internal class HAMHMod : MelonPlugin
 #endif
     }
 
-    [HarmonyPatch(typeof(AdvertControl), "LoadInterstitialAd")]
+    [HarmonyPatch(typeof(AdvertControl), "TryShowInterstitialAd", new Type[] { typeof(AdvertControl.ad_context) })]
     private static class IHateAds
     {
-        static bool Prefix()
+        static bool Prefix(AdvertControl.ad_context _)
         {
             DebugLog("Blocked an ad");
             return false;
         }
     }
 
-    [HarmonyPatch(typeof(AdvertControl), "ShowInterstitial")]
+    [HarmonyPatch(typeof(RewardsControl), "ShowRewardAskPopup")]
     private static class IReallyHateAds
     {
         static bool Prefix()
@@ -204,26 +205,62 @@ internal class HAMHMod : MelonPlugin
         }
     }
 
-    [HarmonyPatch(typeof(Application), "get_isEditor")]
-    private static class IsEditorPatch
+    [HarmonyPatch(typeof(WindowPrefabsControl), "DestroyScreen", new Type[] { typeof(string) })]
+    private static class DestroyScreenPatch
     {
         [HarmonyPrefix]
-        static bool Prefix(ref bool __result)
+        static bool Prefix(string parent_name)
         {
-            // Wait, why are we spoofing the editor being on? Great question!
-            // DevBuildControl checks for the editor being on in order to enable some debugging UI elements.
-            // So if we do something neat such as Lying in order to make it THINK we're in the editor, we can just... have those elements enable themselves.
-
-            // In theory. I haven't tested this part of the mod yet. I'll have to do that myself. Sigh.
-
-            DebugLog("[HAMH] IsEditor checked");
-
 #if DEBUG
-            __result = true; // Yes indeed we are totally in the editor right now. Don't mind the zombies
-            return false; // And no you can't actually check just trust me bro
+            if (parent_name.Contains("dev -"))
+            {
+                MelonLogger.Msg("Denying devscreen destruction");
+                return false; // No.
+            }
+            return true;
 #else 
-            return true; // We're not in the editor actually
+            return true; // Go ahead.
 #endif
+        }
+    }
+
+    [HarmonyPatch(typeof(Connection), "TryConnect")]
+    public static class ConnectionPatch
+    {
+        [HarmonyPrefix]
+        public static void Prefix(Connection __instance)
+        {
+            try
+            {
+                string targetHost = "45.8.201.48";
+                int targetPort = 7002;
+
+                // We use GetHostAddresses for both. 
+                // If targetHost is already an IP ("127.0.0.1"), it returns it immediately.
+                // If it's a domain ("...localto.net"), it resolves it first.
+                IPAddress[] addresses = Dns.GetHostAddresses(targetHost);
+
+                if (addresses.Length > 0)
+                {
+                    string resolvedIp = addresses[0].ToString();
+
+                    // Hijack the Connection instance fields
+                    if (__instance.port == 7002 || __instance.port == 7003)
+                    {
+                        if (__instance.ip == "104.45.198.157")
+                        {
+                            __instance.ip = resolvedIp;
+                            __instance.port = targetPort;
+                        }
+
+                    }
+                    MelonLogger.Msg($"[SHJ] Redirected to {targetHost} ({resolvedIp}):{targetPort}");
+                }
+            }
+            catch (Exception e)
+            {
+                MelonLogger.Error($"[SHJ-ERR] Connection hijack failed: {e.Message}");
+            }
         }
     }
 }
