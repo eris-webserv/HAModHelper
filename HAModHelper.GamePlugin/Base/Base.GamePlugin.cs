@@ -77,15 +77,11 @@ internal class HAMHMod : MelonPlugin
             MelonLogger.Error("[HAMH] Failed to apply Harmony patches, please contact the developer! Below is the thrown exception:");
 
             MelonLogger.Error(ex);
-
-            Application.Quit(1);
         }
         var patches = HarmonyInstance.GetPatchedMethods();
         if (patches.Count() == 1)
         {
-             MelonLogger.Error("[HAMH] Failed to apply Harmony patches, please contact the developer with your log.");
-
-            Application.Quit(1);           
+            MelonLogger.Error("[HAMH] Failed to apply Harmony patches, please contact the developer with your log.");
         }
         MelonLogger.Msg($"[HAMH] Applied {patches.Count()} Harmony patches.");
 
@@ -122,10 +118,11 @@ internal class HAMHMod : MelonPlugin
         }
     }
 
-    [HarmonyPatch(typeof(RewardsControl), "ShowRewardAskPopup")]
+    [HarmonyPatch(typeof(PopupControl), "ShowRewardAskPopup", new Type[] { typeof(AdvertControl.reward_ad_type) })]
+
     private static class IReallyHateAds
     {
-        static bool Prefix()
+        static bool Prefix(AdvertControl.reward_ad_type reward_ad_type_t)
         {
             DebugLog("Blocked an ad");
             return false;
