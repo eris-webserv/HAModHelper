@@ -1,110 +1,93 @@
-﻿using MelonLoader;
-using Il2Cpp;
-using System.Diagnostics;
-using HarmonyLib;
-using UnityEngine;
+﻿using System.Diagnostics;
 using HAModHelper.GamePlugin.Items.Systems;
 using HAModHelper.GamePlugin.Perks.Systems;
-using HAModHelper.GamePlugin.Debug;
 using HAModHelper.GamePlugin.Core.Debug;
 using System.Net;
+using BepInEx.Unity.IL2CPP;
+using BepInEx;
+using HarmonyLib;
+using BepInEx.Logging;
 
 namespace HAModHelper.GamePlugin.Core;
 
-internal class HAMHMod : MelonPlugin
+[BepInAutoPlugin]
+public partial class HAMHMod : BasePlugin
 {
+
+    public Harmony Harmony { get; } = new(Id);
+
     static HAMHMod()
     {
         AssemblyManager.SetOurResolveHandlerAtFront();
     }
-    public override void OnPreModsLoaded()
+    internal static new ManualLogSource Log;
+
+    public override void Load()
     {
-        base.OnApplicationStarted();
+        Log = base.Log;
+        Log.LogInfo($"[HAMH] Starting initialization with mod version {Info.Version}, hash {MelonAssembly.Hash}");
 
-        MelonLogger.Msg($"[HAMH] Starting early initialization with mod version {Info.Version}, hash {MelonAssembly.Hash}");
-
-        MelonLogger.Msg("[HAMH] Initializing subsystems...");
+        Log.LogInfo("[HAMH] Initializing subsystems...");
         try
         {
-
             // Subsystem init
             var stopwatch = Stopwatch.StartNew();
             ItemManager.Instance.Initialize();
             stopwatch.Stop();
-            MelonLogger.Msg($"[HAMH] Initialized ItemManager in {stopwatch.ElapsedMilliseconds}ms.");
+            Log.LogInfo($"[HAMH] Initialized ItemManager in {stopwatch.ElapsedMilliseconds}ms.");
 
             var stopwatch2 = Stopwatch.StartNew();
             PerkManager.Instance.Initialize();
             stopwatch2.Stop();
-            MelonLogger.Msg($"[HAMH] Initialized PerkManager in {stopwatch2.ElapsedMilliseconds}ms.");
-
-            //var stopwatch3 = Stopwatch.StartNew();
-            //UniverseLib.Config.UniverseLibConfig config = new()
-            //{
-            //    Force_Unlock_Mouse = true // no idea if this'll do anything but this feels prudent for Android.
-            //};
-            //UniverseLib.Universe.Init(1f, null, null, config);
-            //stopwatch3.Stop();
-            //MelonLogger.Msg($"[HAMH] Initialized UniverseLib in {stopwatch3.ElapsedMilliseconds}ms.");
-
+            Log.LogInfo($"[HAMH] Initialized PerkManager in {stopwatch2.ElapsedMilliseconds}ms.");
         }
         catch (Exception ex)
         {
-            MelonLogger.Error("[HAMH] Something went terribly wrong during subsystems initialization, please contact the developer! Below is the thrown exception:");
+            Log.LogError("[HAMH] Something went terribly wrong during subsystems initialization, please contact the developer! Below is the thrown exception:");
 
-            MelonLogger.Error(ex);
-
-            Application.Quit(1);
+            Log.LogError(ex);
         }
 
-        MelonLogger.Msg("[HAMH] Early initialization complete.");
-    }
-
-    public override void OnInitializeMelon()
-    {
-        base.OnInitializeMelon();
-
-        MelonLogger.Msg("[HAMH] Handling late initialization");
-
-        // Patch init
-        MelonLogger.Msg("[HAMH] Applying Harmony patches...");
+        Log.LogInfo("[HAMH] Applying Harmony patches...");
         try
         {
-            HarmonyInstance.PatchAll(MelonAssembly.Assembly);
+            Harmony.PatchAll();
         }
         catch (Exception ex)
         {
-            MelonLogger.Error("[HAMH] Failed to apply Harmony patches, please contact the developer! Below is the thrown exception:");
+            Log.LogError("[HAMH] Failed to apply Harmony patches, please contact the developer! Below is the thrown exception:");
 
-            MelonLogger.Error(ex);
+            Log.LogError(ex);
         }
-        var patches = HarmonyInstance.GetPatchedMethods();
+        var patches = Harmony.GetPatchedMethods();
         if (patches.Count() == 1)
         {
-            MelonLogger.Error("[HAMH] Failed to apply Harmony patches, please contact the developer with your log.");
+            Log.LogError("[HAMH] Failed to apply Harmony patches, please contact the developer with your log.");
         }
-        MelonLogger.Msg($"[HAMH] Applied {patches.Count()} Harmony patches.");
+        Log.LogInfo($"[HAMH] Applied {patches.Count()} Harmony patches.");
 
+        //var stopwatch3 = Stopwatch.StartNew();
+        //UniverseLib.Config.UniverseLibConfig config = new()
+        //{
+        //     
+        //};
+        //UniverseLib.Universe.Init(0f, null, (string msg, UnityEngine.LogType _) => { Log.LogInfo(msg); }, config);
+        //stopwatch3.Stop();
+        //Log.LogInfo($"[HAMH] Initialized UniverseLib in {stopwatch3.ElapsedMilliseconds}ms.");
 
         // Debug init
 #if DEBUG
-        MelonLogger.Msg("[HAMH-DBG] Testing the isEditor patch...");
-        if (!Application.isEditor)
-        {
-            MelonLogger.Error("[HAMH-DBG] Patch to isEditor didn't apply >:/");
-        }
-
-        MelonLogger.Msg("[HAMH-DBG] Running DebugHelper (use Release plugin to disable this!)");
-        DebugHelper.Initialize();
+        Log.LogInfo("[HAMH-DBG] Running DebugHelper (use Release plugin to disable this!)");
+        // DebugHelper.Initialize();
 #endif
 
-        MelonLogger.Msg("[HAMH] Late initialization complete.");
+        Log.LogInfo("[HAMH] Initialization complete.");
     }
 
     private static void DebugLog(string toLog)
     {
 #if DEBUG
-        MelonLogger.Msg(toLog);
+        Log.LogDebug(toLog);
 #endif
     }
 
@@ -172,17 +155,6 @@ internal class HAMHMod : MelonPlugin
         }
     }
 
-    /*  [HarmonyPatch(typeof(inventory_ctr), "GiveItem", new Type[] { typeof(string), typeof(int), typeof(string), typeof(bool) })]
-        private static class GiveItemPatch
-        {
-            [HarmonyPrefix]
-            static bool Prefix(string item_name, int count, string fn_validator, bool visual)
-            {
-                DebugLog("[HAMH] GiveItem called for " + item_name);
-                return true; // Let the game handle the rest from here...
-            }
-        }*/
-
     [HarmonyPatch(typeof(inventory_ctr), "GetFullItemName", new Type[] { typeof(InventoryItem) })]
     private static class GetFullItemNamePatch
     {
@@ -208,25 +180,6 @@ internal class HAMHMod : MelonPlugin
         }
     }
 
-    [HarmonyPatch(typeof(WindowPrefabsControl), "DestroyScreen", new Type[] { typeof(string) })]
-    private static class DestroyScreenPatch
-    {
-        [HarmonyPrefix]
-        static bool Prefix(string parent_name)
-        {
-#if DEBUG
-            if (parent_name.Contains("dev -"))
-            {
-                MelonLogger.Msg("Denying devscreen destruction");
-                return false; // No.
-            }
-            return true;
-#else 
-            return true; // Go ahead.
-#endif
-        }
-    }
-
     [HarmonyPatch(typeof(Connection), "TryConnect")]
     public static class ConnectionPatch
     {
@@ -235,6 +188,7 @@ internal class HAMHMod : MelonPlugin
         {
             try
             {
+                // string targetHost = "192.168.1.196";
                 string targetHost = "45.8.201.48";
                 int targetPort = 7002;
 
@@ -257,12 +211,12 @@ internal class HAMHMod : MelonPlugin
                         }
 
                     }
-                    MelonLogger.Msg($"[SHJ] Redirected to {targetHost} ({resolvedIp}):{targetPort}");
+                    DebugLog($"[HAML] Redirected the Friend Server to {targetHost} ({resolvedIp}):{targetPort}");
                 }
             }
             catch (Exception e)
             {
-                MelonLogger.Error($"[SHJ-ERR] Connection hijack failed: {e.Message}");
+                Log.LogError($"[SHJ-ERR] Connection hijack failed: {e.Message}");
             }
         }
     }

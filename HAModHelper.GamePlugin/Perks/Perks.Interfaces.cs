@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using HAModHelper.GamePlugin.Helpers;
-using Il2Cpp;
 
 namespace HAModHelper.GamePlugin.Perks.Interfaces;
 

@@ -1,7 +1,5 @@
 using HAModHelper.GamePlugin.Helpers;
 using HAModHelper.GamePlugin.Items.Interfaces;
-using Il2Cpp;
-using MelonLoader;
 
 namespace HAModHelper.GamePlugin.Items.Systems;
 
@@ -234,7 +232,7 @@ public sealed class ItemManager
         var rcProxy = GetResourceControl();
         if (rcProxy == null)
         {
-            try { MelonLogger.Msg($"[HAMH] ResourceControl not ready, queuing item {id}"); } catch { }
+            try { Log.LogInfo($"[HAMH] ResourceControl not ready, queuing item {id}"); } catch { }
             _queuedItems[id] = item;
             return;
         }
@@ -260,7 +258,7 @@ public sealed class ItemManager
             processedItem = true;
             try
             {
-                MelonLogger.Msg($"[HAMH] Processing queued item {kvp.Key}");
+                Log.LogInfo($"[HAMH] Processing queued item {kvp.Key}");
             }
             catch { }
             ;
@@ -271,7 +269,7 @@ public sealed class ItemManager
         if (processedItem)
             try
             {
-                MelonLogger.Msg($"[HAMH] Processed queued items in {watch.ElapsedMilliseconds}ms.");
+                Log.LogInfo($"[HAMH] Processed queued items in {watch.ElapsedMilliseconds}ms.");
             }
             catch { }
         ;

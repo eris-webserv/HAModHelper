@@ -1,7 +1,5 @@
 using HAModHelper.GamePlugin.Helpers;
 using HAModHelper.GamePlugin.Perks.Interfaces;
-using Il2Cpp;
-using MelonLoader;
 
 namespace HAModHelper.GamePlugin.Perks.Systems;
 
@@ -187,7 +185,7 @@ public sealed class PerkManager
         var pcProxy = GetPerkControl();
         if (pcProxy == null)
         {
-            try { MelonLogger.Msg($"[HAMH] PerkControl not ready, queuing perk {id}"); } catch { }
+            try { Log.LogInfo($"[HAMH] PerkControl not ready, queuing perk {id}"); } catch { }
             _queuedPerks[id] = perk;
             return;
         }
@@ -215,7 +213,7 @@ public sealed class PerkManager
             processedPerk = true;
             try
             {
-                MelonLogger.Msg($"[HAMH] Processing queued perk {kvp.Key}");
+                Log.LogInfo($"[HAMH] Processing queued perk {kvp.Key}");
             }
             catch { }
             TryInjectIntoGameCache(kvp.Key, kvp.Value);
@@ -225,7 +223,7 @@ public sealed class PerkManager
         if (processedPerk)
             try
             {
-                MelonLogger.Msg($"[HAMH] Processed queued perks in {watch.ElapsedMilliseconds}ms.");
+                Log.LogInfo($"[HAMH] Processed queued perks in {watch.ElapsedMilliseconds}ms.");
             }
             catch { }
     }

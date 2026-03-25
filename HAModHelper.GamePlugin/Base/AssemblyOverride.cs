@@ -1,7 +1,6 @@
 
 using System.Reflection;
 using System.Runtime.Loader;
-using MelonLoader;
 
 namespace HAModHelper.GamePlugin.Core.Debug;
 
