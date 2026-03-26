@@ -1,3 +1,4 @@
+using HAModHelper.GamePlugin.Core;
 using HAModHelper.GamePlugin.Helpers;
 using HAModHelper.GamePlugin.Perks.Interfaces;
 
@@ -185,7 +186,7 @@ public sealed class PerkManager
         var pcProxy = GetPerkControl();
         if (pcProxy == null)
         {
-            try { Log.LogInfo($"[HAMH] PerkControl not ready, queuing perk {id}"); } catch { }
+            try { HAMHMod.Logger.LogInfo($"[HAMH] PerkControl not ready, queuing perk {id}"); } catch { }
             _queuedPerks[id] = perk;
             return;
         }
@@ -213,7 +214,7 @@ public sealed class PerkManager
             processedPerk = true;
             try
             {
-                Log.LogInfo($"[HAMH] Processing queued perk {kvp.Key}");
+                HAMHMod.Logger.LogInfo($"[HAMH] Processing queued perk {kvp.Key}");
             }
             catch { }
             TryInjectIntoGameCache(kvp.Key, kvp.Value);
@@ -223,7 +224,7 @@ public sealed class PerkManager
         if (processedPerk)
             try
             {
-                Log.LogInfo($"[HAMH] Processed queued perks in {watch.ElapsedMilliseconds}ms.");
+                HAMHMod.Logger.LogInfo($"[HAMH] Processed queued perks in {watch.ElapsedMilliseconds}ms.");
             }
             catch { }
     }

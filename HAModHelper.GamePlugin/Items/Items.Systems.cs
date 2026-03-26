@@ -1,3 +1,4 @@
+using HAModHelper.GamePlugin.Core;
 using HAModHelper.GamePlugin.Helpers;
 using HAModHelper.GamePlugin.Items.Interfaces;
 
@@ -232,7 +233,7 @@ public sealed class ItemManager
         var rcProxy = GetResourceControl();
         if (rcProxy == null)
         {
-            try { Log.LogInfo($"[HAMH] ResourceControl not ready, queuing item {id}"); } catch { }
+            try { HAMHMod.Logger.LogInfo($"[HAMH] ResourceControl not ready, queuing item {id}"); } catch { }
             _queuedItems[id] = item;
             return;
         }
@@ -258,7 +259,7 @@ public sealed class ItemManager
             processedItem = true;
             try
             {
-                Log.LogInfo($"[HAMH] Processing queued item {kvp.Key}");
+                HAMHMod.Logger.LogInfo($"[HAMH] Processing queued item {kvp.Key}");
             }
             catch { }
             ;
@@ -269,7 +270,7 @@ public sealed class ItemManager
         if (processedItem)
             try
             {
-                Log.LogInfo($"[HAMH] Processed queued items in {watch.ElapsedMilliseconds}ms.");
+                HAMHMod.Logger.LogInfo($"[HAMH] Processed queued items in {watch.ElapsedMilliseconds}ms.");
             }
             catch { }
         ;

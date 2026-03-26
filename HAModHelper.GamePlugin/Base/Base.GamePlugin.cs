@@ -7,25 +7,42 @@ using BepInEx.Unity.IL2CPP;
 using BepInEx;
 using HarmonyLib;
 using BepInEx.Logging;
+using System.Reflection;
+using System.Security.Cryptography;
 
 namespace HAModHelper.GamePlugin.Core;
 
 [BepInAutoPlugin]
 public partial class HAMHMod : BasePlugin
 {
+    internal static BepInPlugin? PluginData;
+    internal Harmony? Harmony { get; } = new(Id);
+    internal static ManualLogSource Logger { private set; get; } = null!;
+    internal static readonly string AssemblyHash = ComputeHash();
 
-    public Harmony Harmony { get; } = new(Id);
-
+    static string ComputeHash()
+    {
+        var path = Assembly.GetExecutingAssembly().Location;
+        using var sha = SHA256.Create();
+        var hash = sha.ComputeHash(File.ReadAllBytes(path));
+        return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+    }
     static HAMHMod()
     {
         AssemblyManager.SetOurResolveHandlerAtFront();
     }
-    internal static new ManualLogSource Log;
 
     public override void Load()
     {
-        Log = base.Log;
-        Log.LogInfo($"[HAMH] Starting initialization with mod version {Info.Version}, hash {MelonAssembly.Hash}");
+        Logger = base.Log;
+        PluginData = MetadataHelper.GetMetadata(this);
+
+        if (Harmony is null)
+        {
+            Log.LogError("[HAMH] WHERE THE FUCK IS HARMONY?!?!?!? (Harmony didn't load. The mod will crash once it gets to hooking required functions.)");
+        }
+
+        Log.LogInfo($"[HAMH] Starting initialization with mod version {Version}, hash {AssemblyHash}");
 
         Log.LogInfo("[HAMH] Initializing subsystems...");
         try
@@ -40,6 +57,11 @@ public partial class HAMHMod : BasePlugin
             PerkManager.Instance.Initialize();
             stopwatch2.Stop();
             Log.LogInfo($"[HAMH] Initialized PerkManager in {stopwatch2.ElapsedMilliseconds}ms.");
+
+            var stopwatch3 = Stopwatch.StartNew();
+            UniverseLib.Universe.Init(null, (string msg, UnityEngine.LogType _) => { Log.LogInfo(msg); });
+            stopwatch3.Stop();
+            Log.LogInfo($"[HAMH] Initialized UniverseLib in {stopwatch3.ElapsedMilliseconds}ms.");
         }
         catch (Exception ex)
         {
@@ -51,7 +73,7 @@ public partial class HAMHMod : BasePlugin
         Log.LogInfo("[HAMH] Applying Harmony patches...");
         try
         {
-            Harmony.PatchAll();
+            Harmony!.PatchAll();
         }
         catch (Exception ex)
         {
@@ -59,21 +81,12 @@ public partial class HAMHMod : BasePlugin
 
             Log.LogError(ex);
         }
-        var patches = Harmony.GetPatchedMethods();
+        var patches = Harmony!.GetPatchedMethods();
         if (patches.Count() == 1)
         {
             Log.LogError("[HAMH] Failed to apply Harmony patches, please contact the developer with your log.");
         }
         Log.LogInfo($"[HAMH] Applied {patches.Count()} Harmony patches.");
-
-        //var stopwatch3 = Stopwatch.StartNew();
-        //UniverseLib.Config.UniverseLibConfig config = new()
-        //{
-        //     
-        //};
-        //UniverseLib.Universe.Init(0f, null, (string msg, UnityEngine.LogType _) => { Log.LogInfo(msg); }, config);
-        //stopwatch3.Stop();
-        //Log.LogInfo($"[HAMH] Initialized UniverseLib in {stopwatch3.ElapsedMilliseconds}ms.");
 
         // Debug init
 #if DEBUG
@@ -87,16 +100,15 @@ public partial class HAMHMod : BasePlugin
     private static void DebugLog(string toLog)
     {
 #if DEBUG
-        Log.LogDebug(toLog);
+        Logger.LogDebug(toLog);
 #endif
     }
 
-    [HarmonyPatch(typeof(AdvertControl), "TryShowInterstitialAd", new Type[] { typeof(AdvertControl.ad_context) })]
-    private static class IHateAds
+    [HarmonyPatch(typeof(AdvertControl), nameof(AdvertControl.LaunchAds))]
+    public static class IHateAds
     {
-        static bool Prefix(AdvertControl.ad_context context)
+        public static bool Prefix()
         {
-            DebugLog("Blocked an ad");
             return false;
         }
     }
@@ -216,7 +228,7 @@ public partial class HAMHMod : BasePlugin
             }
             catch (Exception e)
             {
-                Log.LogError($"[SHJ-ERR] Connection hijack failed: {e.Message}");
+                Logger.LogError($"[SHJ-ERR] Connection hijack failed: {e.Message}");
             }
         }
     }
