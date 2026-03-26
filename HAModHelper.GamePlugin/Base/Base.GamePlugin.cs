@@ -9,6 +9,8 @@ using HarmonyLib;
 using BepInEx.Logging;
 using System.Reflection;
 using System.Security.Cryptography;
+using UniverseLib;
+using UniverseLib.Config;
 
 namespace HAModHelper.GamePlugin.Core;
 
@@ -58,10 +60,14 @@ public partial class HAMHMod : BasePlugin
             stopwatch2.Stop();
             Log.LogInfo($"[HAMH] Initialized PerkManager in {stopwatch2.ElapsedMilliseconds}ms.");
 
-            var stopwatch3 = Stopwatch.StartNew();
-            UniverseLib.Universe.Init(null, (string msg, UnityEngine.LogType _) => { Log.LogInfo(msg); });
-            stopwatch3.Stop();
-            Log.LogInfo($"[HAMH] Initialized UniverseLib in {stopwatch3.ElapsedMilliseconds}ms.");
+            //var stopwatch3 = Stopwatch.StartNew();
+            //UniverseLibConfig uvlconfig = new UniverseLibConfig
+            //{
+            //    
+            //};
+            //UniverseLib.Universe.Init(null, (string msg, UnityEngine.LogType _) => { Log.LogInfo(msg); });
+            //stopwatch3.Stop();
+            //Log.LogInfo($"[HAMH] Initialized UniverseLib in {stopwatch3.ElapsedMilliseconds}ms.");
         }
         catch (Exception ex)
         {
