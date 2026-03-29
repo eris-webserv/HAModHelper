@@ -188,3 +188,32 @@ internal static class WorldPrefabStringOverloadPatch
         return !WorldPrefabManager.Instance.TryInvokeByObjPath(obj_path, on_asset_ready);
     }
 }
+
+/// <summary>
+/// Intercepts <c>ResourceControl.AsyncInstantiateEquipment(string, Action)</c>
+/// (the equipment/helmet loading path: SharedCreature → LiteModel.ApplyHat).
+/// </summary>
+[HarmonyPatch]
+internal static class EquipmentPrefabPatch
+{
+    [HarmonyTargetMethod]
+    static MethodBase TargetMethod()
+    {
+        foreach (var m in typeof(ResourceControl).GetMethods(
+            BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (m.Name != "AsyncInstantiateEquipment") continue;
+            var p = m.GetParameters();
+            if (p.Length == 2 && p[0].ParameterType == typeof(string))
+                return m;
+        }
+        return null!;
+    }
+
+    [HarmonyPrefix]
+    static bool Prefix(string equipment_path, Il2CppSystem.Action<GameObject> on_asset_ready)
+    {
+        if (string.IsNullOrEmpty(equipment_path)) return true;
+        return !WorldPrefabManager.Instance.TryInvokeByObjPath(equipment_path, on_asset_ready);
+    }
+}
