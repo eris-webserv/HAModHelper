@@ -60,6 +60,16 @@ public partial class HAMHMod : BasePlugin
             stopwatch2.Stop();
             Log.LogInfo($"[HAMH] Initialized PerkManager in {stopwatch2.ElapsedMilliseconds}ms.");
 
+            var stopwatch3 = Stopwatch.StartNew();
+            WorldPrefabManager.Instance.Initialize();
+            stopwatch3.Stop();
+            Log.LogInfo($"[HAMH] Initialized WorldPrefabManager in {stopwatch3.ElapsedMilliseconds}ms.");
+
+            var stopwatch4 = Stopwatch.StartNew();
+            CraftingInjectionManager.Instance.Initialize();
+            stopwatch4.Stop();
+            Log.LogInfo($"[HAMH] Initialized CraftingInjectionManager in {stopwatch4.ElapsedMilliseconds}ms.");
+
             //var stopwatch3 = Stopwatch.StartNew();
             //UniverseLibConfig uvlconfig = new UniverseLibConfig
             //{
