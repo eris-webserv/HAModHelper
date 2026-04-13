@@ -1,151 +1,152 @@
-﻿using MelonLoader;
-using Il2Cpp;
-using System.Diagnostics;
-using HarmonyLib;
-using UnityEngine;
+﻿using System.Diagnostics;
 using HAModHelper.GamePlugin.Items.Systems;
 using HAModHelper.GamePlugin.Perks.Systems;
-using HAModHelper.GamePlugin.Debug;
 using HAModHelper.GamePlugin.Core.Debug;
+using System.Net;
+using BepInEx.Unity.IL2CPP;
+using BepInEx;
+using HarmonyLib;
+using BepInEx.Logging;
+using System.Reflection;
+using System.Security.Cryptography;
+using UniverseLib;
+using UniverseLib.Config;
+using BepInEx.Bootstrap;
 
 namespace HAModHelper.GamePlugin.Core;
 
-internal class HAMHMod : MelonPlugin
+[BepInAutoPlugin]
+public partial class HAMHMod : BasePlugin
 {
+    internal static BepInPlugin? PluginData;
+    internal Harmony? Harmony { get; } = new(Id);
+    internal static ManualLogSource Logger { private set; get; } = null!;
+    internal static readonly string AssemblyHash = ComputeHash();
+
+    static string ComputeHash()
+    {
+        var path = Assembly.GetExecutingAssembly().Location;
+        using var sha = SHA256.Create();
+        var hash = sha.ComputeHash(File.ReadAllBytes(path));
+        return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+    }
     static HAMHMod()
     {
         AssemblyManager.SetOurResolveHandlerAtFront();
     }
-    public override void OnPreModsLoaded()
+
+    public override void Load()
     {
-        base.OnApplicationStarted();
+        Logger = base.Log;
+        PluginData = MetadataHelper.GetMetadata(this);
 
-        MelonLogger.Msg($"[HAMH] Starting early initialization with mod version {Info.Version}, hash {MelonAssembly.Hash}");
+        if (Harmony is null)
+        {
+            Log.LogError("[HAMH] WHERE THE FUCK IS HARMONY?!?!?!? (Harmony didn't load. The mod will crash once it gets to hooking required functions.)");
+        }
 
-        MelonLogger.Msg("[HAMH] Checking mods...");
+        Log.LogInfo($"[HAMH] Starting initialization with mod version {Version}, hash {AssemblyHash}");
+
+        Log.LogInfo("[HAMH] Checking mods...");
 
         List<string> blacklistedModHashes = new()
         {
-            
+
         };
 
         List<string> blacklistedModNames = new()
         {
-            
+
         };
 
-        foreach (var melon in MelonAssembly.LoadedMelons)
-        {
-            if (blacklistedModHashes.Contains(melon.MelonAssembly.Hash))
-            {
-                MelonLogger.Msg($"[HAMH-WARN] Disabling blacklisted mod {melon.MelonAssembly.Hash}");
-                melon.Unregister();
-            }
-
-            if (blacklistedModNames.Contains(melon.MelonAssembly.Assembly.GetName().Name ?? "**-**")) // If there is for some reason a mod named **-** that gets blacklisted god help us all
-            {
-                MelonLogger.Msg($"[HAMH-WARN] Disabling blacklisted mod {melon.MelonAssembly.Hash}");
-                melon.Unregister();
-            }
-        }
-
-        MelonLogger.Msg("[HAMH] Initializing subsystems...");
+        Log.LogInfo("[HAMH] Initializing subsystems...");
         try
         {
-
             // Subsystem init
             var stopwatch = Stopwatch.StartNew();
             ItemManager.Instance.Initialize();
             stopwatch.Stop();
-            MelonLogger.Msg($"[HAMH] Initialized ItemManager in {stopwatch.ElapsedMilliseconds}ms.");
+            Log.LogInfo($"[HAMH] Initialized ItemManager in {stopwatch.ElapsedMilliseconds}ms.");
 
             var stopwatch2 = Stopwatch.StartNew();
             PerkManager.Instance.Initialize();
             stopwatch2.Stop();
-            MelonLogger.Msg($"[HAMH] Initialized PerkManager in {stopwatch2.ElapsedMilliseconds}ms.");
+            Log.LogInfo($"[HAMH] Initialized PerkManager in {stopwatch2.ElapsedMilliseconds}ms.");
+
+            var stopwatch3 = Stopwatch.StartNew();
+            WorldPrefabManager.Instance.Initialize();
+            stopwatch3.Stop();
+            Log.LogInfo($"[HAMH] Initialized WorldPrefabManager in {stopwatch3.ElapsedMilliseconds}ms.");
+
+            var stopwatch4 = Stopwatch.StartNew();
+            CraftingInjectionManager.Instance.Initialize();
+            stopwatch4.Stop();
+            Log.LogInfo($"[HAMH] Initialized CraftingInjectionManager in {stopwatch4.ElapsedMilliseconds}ms.");
 
             //var stopwatch3 = Stopwatch.StartNew();
-            //UniverseLib.Config.UniverseLibConfig config = new()
+            //UniverseLibConfig uvlconfig = new UniverseLibConfig
             //{
-            //    Force_Unlock_Mouse = true // no idea if this'll do anything but this feels prudent for Android.
+            //    
             //};
-            //UniverseLib.Universe.Init(1f, null, null, config);
+            //UniverseLib.Universe.Init(null, (string msg, UnityEngine.LogType _) => { Log.LogInfo(msg); });
             //stopwatch3.Stop();
-            //MelonLogger.Msg($"[HAMH] Initialized UniverseLib in {stopwatch3.ElapsedMilliseconds}ms.");
-
+            //Log.LogInfo($"[HAMH] Initialized UniverseLib in {stopwatch3.ElapsedMilliseconds}ms.");
         }
         catch (Exception ex)
         {
-            MelonLogger.Error("[HAMH] Something went terribly wrong during subsystems initialization, please contact the developer! Below is the thrown exception:");
+            Log.LogError("[HAMH] Something went terribly wrong during subsystems initialization, please contact the developer! Below is the thrown exception:");
 
-            MelonLogger.Error(ex);
-
-            Application.Quit(1);
+            Log.LogError(ex);
         }
 
-        MelonLogger.Msg("[HAMH] Early initialization complete.");
-    }
-
-    public override void OnInitializeMelon()
-    {
-        base.OnInitializeMelon();
-
-        MelonLogger.Msg("[HAMH] Handling late initialization");
-
-        // Patch init
-        MelonLogger.Msg("[HAMH] Applying Harmony patches...");
+        Log.LogInfo("[HAMH] Applying Harmony patches...");
         try
         {
-            HarmonyInstance.PatchAll(MelonAssembly.Assembly);
+            Harmony!.PatchAll();
         }
         catch (Exception ex)
         {
-            MelonLogger.Error("[HAMH] Failed to apply Harmony patches, please contact the developer! Below is the thrown exception:");
+            Log.LogError("[HAMH] Failed to apply Harmony patches, please contact the developer! Below is the thrown exception:");
 
-            MelonLogger.Error(ex);
-
-            Application.Quit(1);
+            Log.LogError(ex);
         }
-        var patches = HarmonyInstance.GetPatchedMethods();
-        MelonLogger.Msg($"[HAMH] Applied {patches.Count()} Harmony patches.");
-
+        var patches = Harmony!.GetPatchedMethods();
+        if (patches.Count() == 1)
+        {
+            Log.LogError("[HAMH] Failed to apply Harmony patches, please contact the developer with your log.");
+        }
+        Log.LogInfo($"[HAMH] Applied {patches.Count()} Harmony patches.");
 
         // Debug init
 #if DEBUG
-        MelonLogger.Msg("[HAMH-DBG] Testing the isEditor patch...");
-        if (!Application.isEditor)
-        {
-            MelonLogger.Error("[HAMH-DBG] Patch to isEditor didn't apply >:/");
-        }
-
-        MelonLogger.Msg("[HAMH-DBG] Running DebugHelper (use Release plugin to disable this!)");
-        DebugHelper.Initialize();
+        Log.LogInfo("[HAMH-DBG] Running DebugHelper (use Release plugin to disable this!)");
+        // DebugHelper.Initialize();
 #endif
 
-        MelonLogger.Msg("[HAMH] Late initialization complete.");
+        Log.LogInfo("[HAMH] Initialization complete.");
     }
 
     private static void DebugLog(string toLog)
     {
 #if DEBUG
-        MelonLogger.Msg(toLog);
+        Logger.LogDebug(toLog);
 #endif
     }
 
-    [HarmonyPatch(typeof(AdvertControl), "LoadInterstitialAd")]
-    private static class IHateAds
+    [HarmonyPatch(typeof(AdvertControl), nameof(AdvertControl.LaunchAds))]
+    public static class IHateAds
     {
-        static bool Prefix()
+        public static bool Prefix()
         {
-            DebugLog("Blocked an ad");
             return false;
         }
     }
 
-    [HarmonyPatch(typeof(AdvertControl), "ShowInterstitial")]
+    [HarmonyPatch(typeof(PopupControl), "ShowRewardAskPopup", new Type[] { typeof(AdvertControl.reward_ad_type) })]
+
     private static class IReallyHateAds
     {
-        static bool Prefix()
+        static bool Prefix(AdvertControl.reward_ad_type reward_ad_type_t)
         {
             DebugLog("Blocked an ad");
             return false;
@@ -220,5 +221,45 @@ internal class HAMHMod : MelonPlugin
         }
     }
 
+    [HarmonyPatch(typeof(Connection), "TryConnect")]
+    public static class ConnectionPatch
+    {
+        [HarmonyPrefix]
+        public static void Prefix(Connection __instance)
+        {
+            try
+            {
+                // string targetHost = "192.168.1.196";
+                string targetHost = "45.8.201.48";
+                int targetPort = 7002;
+
+                // We use GetHostAddresses for both. 
+                // If targetHost is already an IP ("127.0.0.1"), it returns it immediately.
+                // If it's a domain ("...localto.net"), it resolves it first.
+                IPAddress[] addresses = Dns.GetHostAddresses(targetHost);
+
+                if (addresses.Length > 0)
+                {
+                    string resolvedIp = addresses[0].ToString();
+
+                    // Hijack the Connection instance fields
+                    if (__instance.port == 7002 || __instance.port == 7003)
+                    {
+                        if (__instance.ip == "104.45.198.157")
+                        {
+                            __instance.ip = resolvedIp;
+                            __instance.port = targetPort;
+                        }
+
+                    }
+                    DebugLog($"[HAML] Redirected the Friend Server to {targetHost} ({resolvedIp}):{targetPort}");
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"[SHJ-ERR] Connection hijack failed: {e.Message}");
+            }
+        }
+    }
 }
 

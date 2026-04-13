@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using HAModHelper.GamePlugin.Helpers;
 using HAModHelper.GamePlugin.Items.Systems;
-using Il2Cpp;
 
 namespace HAModHelper.GamePlugin.Items.Interfaces;
 public interface IResourceControl
