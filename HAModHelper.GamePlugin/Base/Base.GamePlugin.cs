@@ -22,6 +22,33 @@ internal class HAMHMod : MelonPlugin
 
         MelonLogger.Msg($"[HAMH] Starting early initialization with mod version {Info.Version}, hash {MelonAssembly.Hash}");
 
+        MelonLogger.Msg("[HAMH] Checking mods...");
+
+        List<string> blacklistedModHashes = new()
+        {
+            
+        };
+
+        List<string> blacklistedModNames = new()
+        {
+            
+        };
+
+        foreach (var melon in MelonAssembly.LoadedMelons)
+        {
+            if (blacklistedModHashes.Contains(melon.MelonAssembly.Hash))
+            {
+                MelonLogger.Msg($"[HAMH-WARN] Disabling blacklisted mod {melon.MelonAssembly.Hash}");
+                melon.Unregister();
+            }
+
+            if (blacklistedModNames.Contains(melon.MelonAssembly.Assembly.GetName().Name ?? "**-**")) // If there is for some reason a mod named **-** that gets blacklisted god help us all
+            {
+                MelonLogger.Msg($"[HAMH-WARN] Disabling blacklisted mod {melon.MelonAssembly.Hash}");
+                melon.Unregister();
+            }
+        }
+
         MelonLogger.Msg("[HAMH] Initializing subsystems...");
         try
         {
@@ -168,17 +195,6 @@ internal class HAMHMod : MelonPlugin
         }
     }
 
-    /*  [HarmonyPatch(typeof(inventory_ctr), "GiveItem", new Type[] { typeof(string), typeof(int), typeof(string), typeof(bool) })]
-        private static class GiveItemPatch
-        {
-            [HarmonyPrefix]
-            static bool Prefix(string item_name, int count, string fn_validator, bool visual)
-            {
-                DebugLog("[HAMH] GiveItem called for " + item_name);
-                return true; // Let the game handle the rest from here...
-            }
-        }*/
-
     [HarmonyPatch(typeof(inventory_ctr), "GetFullItemName", new Type[] { typeof(InventoryItem) })]
     private static class GetFullItemNamePatch
     {
@@ -204,27 +220,5 @@ internal class HAMHMod : MelonPlugin
         }
     }
 
-    [HarmonyPatch(typeof(Application), "get_isEditor")]
-    private static class IsEditorPatch
-    {
-        [HarmonyPrefix]
-        static bool Prefix(ref bool __result)
-        {
-            // Wait, why are we spoofing the editor being on? Great question!
-            // DevBuildControl checks for the editor being on in order to enable some debugging UI elements.
-            // So if we do something neat such as Lying in order to make it THINK we're in the editor, we can just... have those elements enable themselves.
-
-            // In theory. I haven't tested this part of the mod yet. I'll have to do that myself. Sigh.
-
-            DebugLog("[HAMH] IsEditor checked");
-
-#if DEBUG
-            __result = true; // Yes indeed we are totally in the editor right now. Don't mind the zombies
-            return false; // And no you can't actually check just trust me bro
-#else 
-            return true; // We're not in the editor actually
-#endif
-        }
-    }
 }
 

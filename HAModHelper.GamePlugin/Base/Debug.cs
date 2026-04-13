@@ -5,6 +5,8 @@ using UnityEngine;
 using Newtonsoft.Json;
 using HAModHelper.GamePlugin.Items.Systems;
 using System.Text.Json.Nodes;
+using HAModHelper.GamePlugin.Core;
+using HAModHelper.GamePlugin.Perks.Systems;
 // using UniverseLib.UI;
 
 namespace HAModHelper.GamePlugin.Debug;
@@ -23,12 +25,22 @@ public static class DebugHelper
             StackLimit = 10,
         });
 
+        PerkManager.Instance.AddPerk(new Perk
+        {
+            ModId = "hamltest",
+            PerkId = "sisyphyusprime",
+            Name = "Sisyphus Prime",
+            Description = "Die.",
+            DetailedDescription = "Kills everything around you (when I code it)",
+            SpritePath = "item egg",
+        });
+
         MelonEvents.OnGUI.Subscribe(DrawMenu, 100); // The higher the value, the lower the priority.    
     }
 
     private static void DrawMenu()
     {
-        GUI.Box(new Rect(0, 0, 200, 200), "Test Menu");
+        GUI.Box(new Rect(600, 0, 200, 200), "Test Menu");
         // button that gives you item "hamltest:minosprime"
         if (GUI.Button(new Rect(0, 30, 100, 30), "Give Minos Prime"))
         {
