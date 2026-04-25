@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using UniverseLib;
 using UniverseLib.Config;
+using BepInEx.Bootstrap;
 
 namespace HAModHelper.GamePlugin.Core;
 
@@ -45,6 +46,18 @@ public partial class HAMHMod : BasePlugin
         }
 
         Log.LogInfo($"[HAMH] Starting initialization with mod version {Version}, hash {AssemblyHash}");
+
+        Log.LogInfo("[HAMH] Checking mods...");
+
+        List<string> blacklistedModHashes = new()
+        {
+
+        };
+
+        List<string> blacklistedModNames = new()
+        {
+
+        };
 
         Log.LogInfo("[HAMH] Initializing subsystems...");
         try

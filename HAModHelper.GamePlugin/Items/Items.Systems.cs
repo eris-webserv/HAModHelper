@@ -5,7 +5,7 @@ using HAModHelper.GamePlugin.Items.Interfaces;
 namespace HAModHelper.GamePlugin.Items.Systems;
 
 // Every item loaded in HA has a relevant class instantiated. There will be a HashSet available for access by id.
-// Modifying an item's Item class will modify it at runtime in-game.
+// Modifying an item's Item class will modify it at runtime in-game once UpdateItem() is called on the item.
 // Instantiating a new Item is totally legal and will cause it to become available ingame.
 public class Item
 {
@@ -21,6 +21,12 @@ public class Item
 
     // Escape hatch for anything not modeled yet (including keys with spaces)
     public Dictionary<string, string> ExtraFields { get; set; } = new();
+
+    public void UpdateItem()
+    {
+        var iman = ItemManager.Instance;
+        iman.PatchItem(this);
+    }
 }
 
 [Flags]
