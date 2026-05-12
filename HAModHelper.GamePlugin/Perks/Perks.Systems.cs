@@ -14,8 +14,8 @@ public class Perk
     public required string Description { get; set; }
     public required string DetailedDescription { get; set; }
     public string? UltraDetailedDescription { get; set; }
+    public string? SpritePath { get; set; }
     public Dictionary<string, SinglePerkEffect>? PerkEffects { get; set; }
-
 }
 
 public static class PerkConverter
