@@ -4,6 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
 
     <VersionPrefix>0.0.1</VersionPrefix>
     <Description>The mod manager and game management library for Hybrid Animals.</Description>
