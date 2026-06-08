@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using HAModHelper.GamePlugin.Items.Systems;
 using HAModHelper.GamePlugin.Perks.Systems;
-using HAModHelper.GamePlugin.Entities.Systems;
+using HAModHelper.GamePlugin.Creatures.Systems;
 using HAModHelper.GamePlugin.Core.Debug;
 using System.Net;
 using BepInEx.Unity.IL2CPP;
