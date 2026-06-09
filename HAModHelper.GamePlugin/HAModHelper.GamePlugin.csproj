@@ -9,18 +9,6 @@
     <Description>The mod manager and game management library for Hybrid Animals.</Description>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Resources\UniverseLib.BIE.IL2CPP.Interop.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\UniverseLib.BIE.IL2CPP.Interop.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference
-    Include="UniverseLib">
-      <HintPath>./Resources/UniverseLib.BIE.IL2CPP.Interop.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.735" Private="false"
