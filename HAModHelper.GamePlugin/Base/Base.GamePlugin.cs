@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using HAModHelper.GamePlugin.Items.Systems;
 using HAModHelper.GamePlugin.Perks.Systems;
+using HAModHelper.GamePlugin.Creatures.Systems;
 using HAModHelper.GamePlugin.Core.Debug;
 using System.Net;
 using BepInEx.Unity.IL2CPP;
@@ -81,6 +82,11 @@ public partial class HAMHMod : BasePlugin
             CraftingInjectionManager.Instance.Initialize();
             stopwatch4.Stop();
             Log.LogInfo($"[HAMH] Initialized CraftingInjectionManager in {stopwatch4.ElapsedMilliseconds}ms.");
+
+            var stopwatch5 = Stopwatch.StartNew();
+            CreatureManager.Instance.Initialize();
+            stopwatch5.Stop();
+            Log.LogInfo($"[HAMH] Initialized CreatureManager in {stopwatch5.ElapsedMilliseconds}ms.");
 
             //var stopwatch3 = Stopwatch.StartNew();
             //UniverseLibConfig uvlconfig = new UniverseLibConfig
