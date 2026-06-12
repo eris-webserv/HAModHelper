@@ -10,9 +10,8 @@ using HarmonyLib;
 using BepInEx.Logging;
 using System.Reflection;
 using System.Security.Cryptography;
-using UniverseLib;
-using UniverseLib.Config;
-using BepInEx.Bootstrap;
+using HAModHelper.GamePlugin.Debug;
+using static FriendServerInterface;
 
 namespace HAModHelper.GamePlugin.Core;
 
@@ -92,9 +91,9 @@ public partial class HAMHMod : BasePlugin
             //var stopwatch3 = Stopwatch.StartNew();
             //UniverseLibConfig uvlconfig = new UniverseLibConfig
             //{
-            //    
+            //    Disable_EventSystem_Override = true
             //};
-            //UniverseLib.Universe.Init(null, (string msg, UnityEngine.LogType _) => { Log.LogInfo(msg); });
+            //Universe.Init(1f, null, (string msg, UnityEngine.LogType _) => { Log.LogInfo(msg);}, uvlconfig);
             //stopwatch3.Stop();
             //Log.LogInfo($"[HAMH] Initialized UniverseLib in {stopwatch3.ElapsedMilliseconds}ms.");
         }
@@ -126,7 +125,7 @@ public partial class HAMHMod : BasePlugin
         // Debug init
 #if DEBUG
         Log.LogInfo("[HAMH-DBG] Running DebugHelper (use Release plugin to disable this!)");
-        // DebugHelper.Initialize();
+        DebugHelper.Initialize();
 #endif
 
         Log.LogInfo("[HAMH] Initialization complete.");
@@ -137,6 +136,28 @@ public partial class HAMHMod : BasePlugin
 #if DEBUG
         Logger.LogDebug(toLog);
 #endif
+    }
+
+    // Restore the left/right miniwindow tabs when the friends list (screen 4) is opened.
+    // The current game calls HideMiniwindowHeaders for screen 4, hiding the tab that lets
+    // you swap to the public server browser. This postfix re-shows them after the setup runs.
+    [HarmonyPatch(typeof(FriendServerInterface), "ChangeFriendScreen", new Type[] { typeof(friend_window_screen) })]
+    private static class RestoreServerListTabPatch
+    {
+        static void Postfix(friend_window_screen new_screen)
+        {
+            if (new_screen != friend_window_screen.friend_list) return;
+            var wc = WindowControl.Instance;
+            if (wc == null) return;
+            wc.ShowMiniwindowHeaders();
+            var wpc = WindowPrefabsControl.Instance;
+            if (wpc == null) return;
+
+            var windowPrefabScreen = wpc.prefab_screens_instantiated["FRIENDS-friends_list"];
+            var header = windowPrefabScreen.transform.Find("header");
+            if (header != null)
+                header.gameObject.SetActive(false);
+        }
     }
 
     [HarmonyPatch(typeof(AdvertControl), nameof(AdvertControl.LaunchAds))]
