@@ -1,0 +1,105 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Segually\\source\\repos\\SegualHAModHelper\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{B31ADE24-66C8-B8AA-3781-51CAD769655C}|HAModHelper.GamePlugin\\HAModHelper.GamePlugin.csproj|c:\\users\\segually\\source\\repos\\segualhamodhelper\\hamodhelper.gameplugin\\creatures\\creatures.systems.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B31ADE24-66C8-B8AA-3781-51CAD769655C}|HAModHelper.GamePlugin\\HAModHelper.GamePlugin.csproj|solutionrelative:hamodhelper.gameplugin\\creatures\\creatures.systems.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B31ADE24-66C8-B8AA-3781-51CAD769655C}|HAModHelper.GamePlugin\\HAModHelper.GamePlugin.csproj|c:\\users\\segually\\source\\repos\\segualhamodhelper\\hamodhelper.gameplugin\\creatures\\creatures.interfaces.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B31ADE24-66C8-B8AA-3781-51CAD769655C}|HAModHelper.GamePlugin\\HAModHelper.GamePlugin.csproj|solutionrelative:hamodhelper.gameplugin\\creatures\\creatures.interfaces.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B31ADE24-66C8-B8AA-3781-51CAD769655C}|HAModHelper.GamePlugin\\HAModHelper.GamePlugin.csproj|c:\\users\\segually\\source\\repos\\segualhamodhelper\\hamodhelper.gameplugin\\creatures\\creatures.events.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B31ADE24-66C8-B8AA-3781-51CAD769655C}|HAModHelper.GamePlugin\\HAModHelper.GamePlugin.csproj|solutionrelative:hamodhelper.gameplugin\\creatures\\creatures.events.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B31ADE24-66C8-B8AA-3781-51CAD769655C}|HAModHelper.GamePlugin\\HAModHelper.GamePlugin.csproj|c:\\users\\segually\\source\\repos\\segualhamodhelper\\hamodhelper.gameplugin\\base\\base.gameplugin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B31ADE24-66C8-B8AA-3781-51CAD769655C}|HAModHelper.GamePlugin\\HAModHelper.GamePlugin.csproj|solutionrelative:hamodhelper.gameplugin\\base\\base.gameplugin.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B31ADE24-66C8-B8AA-3781-51CAD769655C}|HAModHelper.GamePlugin\\HAModHelper.GamePlugin.csproj|c:\\users\\segually\\source\\repos\\segualhamodhelper\\hamodhelper.gameplugin\\hamodhelper.gameplugin.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{B31ADE24-66C8-B8AA-3781-51CAD769655C}|HAModHelper.GamePlugin\\HAModHelper.GamePlugin.csproj|solutionrelative:hamodhelper.gameplugin\\hamodhelper.gameplugin.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Creatures.Systems.cs",
+              "DocumentMoniker": "C:\\Users\\Segually\\source\\repos\\SegualHAModHelper\\HAModHelper.GamePlugin\\Creatures\\Creatures.Systems.cs",
+              "RelativeDocumentMoniker": "HAModHelper.GamePlugin\\Creatures\\Creatures.Systems.cs",
+              "ToolTip": "C:\\Users\\Segually\\source\\repos\\SegualHAModHelper\\HAModHelper.GamePlugin\\Creatures\\Creatures.Systems.cs",
+              "RelativeToolTip": "HAModHelper.GamePlugin\\Creatures\\Creatures.Systems.cs",
+              "ViewState": "AgIAANQAAAAAAAAAAAAmwN8AAABhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-12T12:47:05.695Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Creatures.Interfaces.cs",
+              "DocumentMoniker": "C:\\Users\\Segually\\source\\repos\\SegualHAModHelper\\HAModHelper.GamePlugin\\Creatures\\Creatures.Interfaces.cs",
+              "RelativeDocumentMoniker": "HAModHelper.GamePlugin\\Creatures\\Creatures.Interfaces.cs",
+              "ToolTip": "C:\\Users\\Segually\\source\\repos\\SegualHAModHelper\\HAModHelper.GamePlugin\\Creatures\\Creatures.Interfaces.cs",
+              "RelativeToolTip": "HAModHelper.GamePlugin\\Creatures\\Creatures.Interfaces.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-12T12:47:04.583Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Creatures.Events.cs",
+              "DocumentMoniker": "C:\\Users\\Segually\\source\\repos\\SegualHAModHelper\\HAModHelper.GamePlugin\\Creatures\\Creatures.Events.cs",
+              "RelativeDocumentMoniker": "HAModHelper.GamePlugin\\Creatures\\Creatures.Events.cs",
+              "ToolTip": "C:\\Users\\Segually\\source\\repos\\SegualHAModHelper\\HAModHelper.GamePlugin\\Creatures\\Creatures.Events.cs",
+              "RelativeToolTip": "HAModHelper.GamePlugin\\Creatures\\Creatures.Events.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-12T12:47:02.98Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Base.GamePlugin.cs",
+              "DocumentMoniker": "C:\\Users\\Segually\\source\\repos\\SegualHAModHelper\\HAModHelper.GamePlugin\\Base\\Base.GamePlugin.cs",
+              "RelativeDocumentMoniker": "HAModHelper.GamePlugin\\Base\\Base.GamePlugin.cs",
+              "ToolTip": "C:\\Users\\Segually\\source\\repos\\SegualHAModHelper\\HAModHelper.GamePlugin\\Base\\Base.GamePlugin.cs",
+              "RelativeToolTip": "HAModHelper.GamePlugin\\Base\\Base.GamePlugin.cs",
+              "ViewState": "AgIAALoAAAAAAAAAAAA2wFYAAAAyAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-12T12:36:28.602Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "HAModHelper.GamePlugin.csproj",
+              "DocumentMoniker": "C:\\Users\\Segually\\source\\repos\\SegualHAModHelper\\HAModHelper.GamePlugin\\HAModHelper.GamePlugin.csproj",
+              "RelativeDocumentMoniker": "HAModHelper.GamePlugin\\HAModHelper.GamePlugin.csproj",
+              "ToolTip": "C:\\Users\\Segually\\source\\repos\\SegualHAModHelper\\HAModHelper.GamePlugin\\HAModHelper.GamePlugin.csproj",
+              "RelativeToolTip": "HAModHelper.GamePlugin\\HAModHelper.GamePlugin.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-05-21T16:34:30.032Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

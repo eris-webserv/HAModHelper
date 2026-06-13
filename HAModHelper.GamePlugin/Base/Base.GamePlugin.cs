@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
 using HAModHelper.GamePlugin.Items.Systems;
 using HAModHelper.GamePlugin.Perks.Systems;
+using HAModHelper.GamePlugin.Creatures.Systems;
+using HAModHelper.GamePlugin.Assets.Systems;
 using HAModHelper.GamePlugin.Core.Debug;
 using System.Net;
 using BepInEx.Unity.IL2CPP;
@@ -73,23 +75,14 @@ public partial class HAMHMod : BasePlugin
             Log.LogInfo($"[HAMH] Initialized PerkManager in {stopwatch2.ElapsedMilliseconds}ms.");
 
             var stopwatch3 = Stopwatch.StartNew();
-            WorldPrefabManager.Instance.Initialize();
+            AssetBundleManager.Instance.Initialize();
             stopwatch3.Stop();
-            Log.LogInfo($"[HAMH] Initialized WorldPrefabManager in {stopwatch3.ElapsedMilliseconds}ms.");
+            Log.LogInfo($"[HAMH] Initialized AssetBundleManager in {stopwatch3.ElapsedMilliseconds}ms.");
 
             var stopwatch4 = Stopwatch.StartNew();
             CraftingInjectionManager.Instance.Initialize();
             stopwatch4.Stop();
             Log.LogInfo($"[HAMH] Initialized CraftingInjectionManager in {stopwatch4.ElapsedMilliseconds}ms.");
-
-            //var stopwatch3 = Stopwatch.StartNew();
-            //UniverseLibConfig uvlconfig = new UniverseLibConfig
-            //{
-            //    Disable_EventSystem_Override = true
-            //};
-            //Universe.Init(1f, null, (string msg, UnityEngine.LogType _) => { Log.LogInfo(msg);}, uvlconfig);
-            //stopwatch3.Stop();
-            //Log.LogInfo($"[HAMH] Initialized UniverseLib in {stopwatch3.ElapsedMilliseconds}ms.");
         }
         catch (Exception ex)
         {
@@ -254,9 +247,6 @@ public partial class HAMHMod : BasePlugin
                 string targetHost = "45.8.201.48";
                 int targetPort = 7002;
 
-                // We use GetHostAddresses for both. 
-                // If targetHost is already an IP ("127.0.0.1"), it returns it immediately.
-                // If it's a domain ("...localto.net"), it resolves it first.
                 IPAddress[] addresses = Dns.GetHostAddresses(targetHost);
 
                 if (addresses.Length > 0)
@@ -283,4 +273,3 @@ public partial class HAMHMod : BasePlugin
         }
     }
 }
-
