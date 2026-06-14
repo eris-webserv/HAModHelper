@@ -82,6 +82,11 @@ public partial class HAMHMod : BasePlugin
             stopwatch4.Stop();
             Log.LogInfo($"[HAMH] Initialized CraftingInjectionManager in {stopwatch4.ElapsedMilliseconds}ms.");
 
+            var stopwatch5 = Stopwatch.StartNew();
+            InteractableManager.Instance.Initialize();
+            stopwatch5.Stop();
+            Log.LogInfo($"[HAMH] Initialized InteractableManager in {stopwatch5.ElapsedMilliseconds}ms.");
+
             //var stopwatch3 = Stopwatch.StartNew();
             //UniverseLibConfig uvlconfig = new UniverseLibConfig
             //{
@@ -283,4 +288,3 @@ public partial class HAMHMod : BasePlugin
         }
     }
 }
-
