@@ -44,6 +44,13 @@ public enum InteractableType
     OpenCrafting,
 
     /// <summary>
+    /// A storage container (chest). Interacting opens the world-container UI for the object, exactly
+    /// like a vanilla chest. The tab shows <see cref="InteractableRegistration.DisplayName"/> instead
+    /// of the raw id, and the container has <see cref="InteractableRegistration.Pages"/> pages of slots.
+    /// </summary>
+    Container,
+
+    /// <summary>
     /// No built-in behaviour or classification — <see cref="InteractableRegistration.OnInteract"/>
     /// runs on interact. Use for anything not covered above (custom menus, scripted effects, ...).
     /// </summary>
@@ -94,6 +101,20 @@ public sealed class InteractableRegistration
     /// </summary>
     public string? CraftMenuTitle { get; init; }
 
+    /// <summary>
+    /// For <see cref="InteractableType.Container"/>: the title shown on the container tab. When null,
+    /// the item's display name (or, failing that, its id) is used — instead of the raw id
+    /// (e.g. <c>"MyMod:MyChest"</c>) the game would otherwise show.
+    /// </summary>
+    public string? DisplayName { get; init; }
+
+    /// <summary>
+    /// For <see cref="InteractableType.Container"/>: how many pages of slots the container has.
+    /// The game supports 1–3 pages (each page is <c>inventory_ctr.n_slots_per_page_</c> slots);
+    /// values are clamped into that range. Defaults to 1.
+    /// </summary>
+    public int Pages { get; init; } = 1;
+
     /// <summary>Run this registration's behaviour.</summary>
     internal void Execute(InteractContext ctx)
     {
@@ -106,10 +127,41 @@ public sealed class InteractableRegistration
             case InteractableType.OpenCrafting:
                 OpenCrafting();
                 break;
+            case InteractableType.Container:
+                OpenContainer(ctx);
+                break;
             case InteractableType.Custom:
                 OnInteract?.Invoke(ctx);
                 break;
         }
+    }
+
+    // Container case of player_interact. Reverse-engineered from GameController.player_interact: it
+    // records the interacted object via GameController.NoteInteractingElement (chunk/inner grid coords
+    // + the object's InventoryItem + rot, all carried on the Interactable), then calls
+    // inventory_ctr.TryOpenWorldContainer with the same values. TryOpenWorldContainer handles both
+    // the online path (server request for the container contents) and the offline path
+    // (LoadFromDiskAsContainer -> SucceedOpenWorldContainer -> OpenInventoryAndContainer, which shows
+    // the UI). It keys the container off GameController.interacting_element_item, so we set that here
+    // rather than relying on it already being current.
+    private static void OpenContainer(InteractContext ctx)
+    {
+        var inv = inventory_ctr.Instance;
+        if (inv == null) return;
+
+        var it = ctx.Interactable;
+        var item = it.corresponding_item;          // the placed object's InventoryItem (the container)
+        if (item == null) return;
+
+        ctx.Controller.NoteInteractingElement(
+            it.origin_chunkX, it.origin_chunkZ,
+            it.origin_innerX, it.origin_innerZ,
+            item, it.temp_rot);
+
+        inv.TryOpenWorldContainer(
+            item, it.temp_rot,
+            it.origin_innerX, it.origin_innerZ,
+            it.origin_chunkX, it.origin_chunkZ);
     }
 
     // Chair/bed case of player_interact. TrySitInChairObj itself calls IsChairObject/IsBedObject
@@ -223,6 +275,25 @@ public sealed class InteractableManager
             CraftMenuTitle = menuTitle,
         });
 
+    /// <summary>
+    /// Register a storage container (chest). Interacting opens the world-container UI for the placed
+    /// object, exactly like a vanilla chest (works online and offline).
+    /// </summary>
+    /// <param name="itemName">The full mod id stored in <c>Interactable.item_name</c> (e.g. <c>"MyMod:MyChest"</c>).</param>
+    /// <param name="displayName">
+    /// Title shown on the container tab. When null, the item's display name (or its id) is used,
+    /// instead of the raw id the game would otherwise show.
+    /// </param>
+    /// <param name="pages">How many pages of slots the container has (1–3, clamped). Defaults to 1.</param>
+    public void RegisterContainer(string itemName, string? displayName = null, int pages = 1)
+        => Register(new InteractableRegistration
+        {
+            ItemName = itemName,
+            Type = InteractableType.Container,
+            DisplayName = displayName,
+            Pages = pages,
+        });
+
     /// <summary>Register an interactable with fully custom behaviour run on interact.</summary>
     public void RegisterCustom(string itemName, Action<InteractContext> onInteract)
         => Register(new InteractableRegistration { ItemName = itemName, Type = InteractableType.Custom, OnInteract = onInteract });
@@ -231,6 +302,23 @@ public sealed class InteractableManager
 
     internal InteractableRegistration? Lookup(string itemName)
         => _byItemName.TryGetValue(itemName, out var reg) ? reg : null;
+
+    /// <summary>The registration for <paramref name="itemName"/> if it is a registered container, else null.</summary>
+    internal InteractableRegistration? LookupContainer(string? itemName)
+        => itemName is not null && _byItemName.TryGetValue(itemName, out var reg) && reg.Type == InteractableType.Container
+            ? reg
+            : null;
+
+    /// <summary>
+    /// The registration for the container the player is currently interacting with (keyed off
+    /// <c>GameController.interacting_element_item</c>), if that object is a registered container.
+    /// Used by the container UI patches, which only see the inventory controller, not the object.
+    /// </summary>
+    internal InteractableRegistration? CurrentContainerRegistration()
+    {
+        var item = GameController.Instance?.interacting_element_item;
+        return item == null ? null : LookupContainer(item.item_name);
+    }
 
     internal bool IsRegisteredClassification(string predicateMethod, string? itemName)
     {
@@ -319,6 +407,129 @@ internal static class InteractableClassificationPatch
         catch (Exception ex)
         {
             HAMHMod.Logger?.LogError($"[HAMH] Interactable classification postfix failed: {ex}");
+        }
+    }
+}
+
+// ── Container UI patches ────────────────────────────────────────────────────────
+//
+// A modded chest opens through the vanilla container flow (see OpenContainer above), but two pieces
+// of that flow are hardcoded against the game's own chest ids and so don't know about ours:
+//
+//   • The tab title. SucceedOpenWorldContainer derives it from TranslateItemName(item_name); for a
+//     modded id that resolves to the raw id (e.g. "MyMod:MyChest"). We rewrite the title that
+//     inventory_ctr.OpenInventoryAndContainer is about to display.
+//   • The page count. goto_crafting_tab switches on item_name to pick how many pages to lay out and
+//     hits a 1-page default for unknown ids. The count is funnelled into inventory_ctr.LayOutInvSlots'
+//     n_pages argument (which alone drives the page-switcher buttons; navigation/redraw are generic),
+//     and drag/drop validity per page comes from inventory_ctr.GetPermittedContainerSlots. We override
+//     both for our containers.
+
+/// <summary>
+/// Prefix on the world-container UI open. Replaces the tab title with the registered container's
+/// <see cref="InteractableRegistration.DisplayName"/> (falling back to the item's display name, then
+/// its id) instead of the raw id the game derives from the item name.
+/// </summary>
+[HarmonyPatch(typeof(inventory_ctr), nameof(inventory_ctr.OpenInventoryAndContainer))]
+internal static class ContainerTabTitlePatch
+{
+    [HarmonyPrefix]
+    static void Prefix(ref string non_inv_tab_name)
+    {
+        try
+        {
+            var reg = InteractableManager.Instance.CurrentContainerRegistration();
+            if (reg is null) return;
+            non_inv_tab_name = reg.DisplayName
+                ?? ItemManager.Instance.GetItem(reg.ItemName)?.Name
+                ?? reg.ItemName;
+        }
+        catch (Exception ex)
+        {
+            HAMHMod.Logger?.LogError($"[HAMH] Container tab-title prefix failed: {ex}");
+        }
+    }
+}
+
+/// <summary>
+/// Prefix on the inventory/container slot layout. When the container tab is being laid out for one of
+/// our registered containers, overrides <c>n_pages</c> with the registered page count (1–3) so the
+/// page-switcher buttons appear; the game's own navigation and redraw handle the rest generically.
+/// </summary>
+[HarmonyPatch(typeof(inventory_ctr), nameof(inventory_ctr.LayOutInvSlots))]
+internal static class ContainerPageCountPatch
+{
+    [HarmonyPrefix]
+    static void Prefix(ref int n_pages)
+    {
+        try
+        {
+            // Only touch the container tab (the same gate inv_page_switch uses), never the inventory
+            // tab or other miniwindows that also call LayOutInvSlots.
+            var wc = WindowControl.Instance;
+            if (wc == null
+                || wc.curr_miniwindow != WindowControl.miniwindow_type_t.inventory_and_container
+                || wc.curr_miniwindow_tab_selected != WindowControl.tab.right)
+                return;
+
+            var reg = InteractableManager.Instance.CurrentContainerRegistration();
+            if (reg is null) return;
+
+            n_pages = Math.Clamp(reg.Pages, 1, 3);
+        }
+        catch (Exception ex)
+        {
+            HAMHMod.Logger?.LogError($"[HAMH] Container page-count prefix failed: {ex}");
+        }
+    }
+}
+
+/// <summary>
+/// Postfix on the per-page permitted-slot lookup (drives which slots accept drag/drop). For a
+/// registered container it returns the slot indices for the requested page, mirroring the layout the
+/// game uses for its own multi-page chests (page 1 → [0, n), page 2 → [p2_begin, p2_begin+n),
+/// page 3 → [p2_begin+n, p2_begin+2n), where n = n_slots_per_page_). Pages beyond the registered
+/// count get no slots.
+/// </summary>
+[HarmonyPatch(typeof(inventory_ctr), nameof(inventory_ctr.GetPermittedContainerSlots))]
+internal static class ContainerPermittedSlotsPatch
+{
+    [HarmonyPostfix]
+    static void Postfix(inventory_ctr.container_style_t style, string item_name, inventory_ctr.ptype page,
+        ref Il2CppSystem.Collections.Generic.List<int> __result)
+    {
+        try
+        {
+            if (style != inventory_ctr.container_style_t.world_container) return;
+            var reg = InteractableManager.Instance.LookupContainer(item_name);
+            if (reg is null) return;
+
+            int pages = Math.Clamp(reg.Pages, 1, 3);
+            int nspp = inventory_ctr.n_slots_per_page_;
+            int p2 = inventory_ctr.p2_begin_;
+
+            var list = new Il2CppSystem.Collections.Generic.List<int>();
+            void AddPage(int pageIndex)
+            {
+                int start = pageIndex == 0 ? 0 : p2 + (pageIndex - 1) * nspp;
+                for (int i = 0; i < nspp; i++) list.Add(start + i);
+            }
+
+            switch (page)
+            {
+                case inventory_ctr.ptype.firstPage: AddPage(0); break;
+                case inventory_ctr.ptype.secondPage: if (pages >= 2) AddPage(1); break;
+                case inventory_ctr.ptype.thirdPage: if (pages >= 3) AddPage(2); break;
+                case inventory_ctr.ptype.eitherPage:
+                    for (int p = 0; p < pages; p++) AddPage(p);
+                    break;
+            }
+
+            __result = list;
+        }
+        catch (Exception ex)
+        {
+            HAMHMod.Logger?.LogError($"[HAMH] Container permitted-slots postfix failed: {ex}");
         }
     }
 }
