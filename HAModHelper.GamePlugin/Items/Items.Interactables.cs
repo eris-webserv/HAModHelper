@@ -533,3 +533,43 @@ internal static class ContainerPermittedSlotsPatch
         }
     }
 }
+
+/// <summary>
+/// Postfix on <c>InventoryUtils.UsesBasketId(InventoryItem)</c> — the predicate that decides whether an
+/// object stores its contents under a per-instance <c>basket_id</c>.
+///
+/// <para>
+/// This is what actually keys a chest's contents to the specific placed object. At put-down time
+/// <c>inventory_ctr.FinalizeItemBeforePutDown</c> assigns a fresh unique <c>basket_id</c>
+/// (<c>ConstructionControl.GetNewUniqueId</c>) — but only when this predicate is true and the item
+/// doesn't already have one — and stores it in the object's saved data; opening then loads/saves the
+/// container file for that id. The predicate is a hardcoded item_name list, so a modded container never
+/// qualifies: it keeps <c>basket_id == 0</c> and every modded chest in the world shares that one
+/// container. Forcing true for registered containers gives each placed instance its own id.
+/// </para>
+///
+/// <para>
+/// Because the id lives in the object's world data, relocating the chest with the build/move tools
+/// keeps the same object and so keeps its contents; only taking it back into the inventory (which
+/// resets <c>basket_id</c> via <c>DropExtraItemDataOnPickup</c>) and placing a fresh one starts an empty
+/// container — i.e. exactly how vanilla chests behave.
+/// </para>
+/// </summary>
+[HarmonyPatch(typeof(InventoryUtils), nameof(InventoryUtils.UsesBasketId), new Type[] { typeof(InventoryItem) })]
+internal static class ContainerUsesBasketIdPatch
+{
+    [HarmonyPostfix]
+    static void Postfix(InventoryItem item, ref bool __result)
+    {
+        if (__result) return;                                  // already a basket-id object -> leave it
+        try
+        {
+            if (item != null && InteractableManager.Instance.LookupContainer(item.item_name) != null)
+                __result = true;
+        }
+        catch (Exception ex)
+        {
+            HAMHMod.Logger?.LogError($"[HAMH] Container UsesBasketId postfix failed: {ex}");
+        }
+    }
+}
