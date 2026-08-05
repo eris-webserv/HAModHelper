@@ -11,6 +11,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using HAModHelper.GamePlugin.Debug;
 using static FriendServerInterface;
+using HAModHelper.GamePlugin.Chunks.Systems;
 
 namespace HAModHelper.GamePlugin.Core;
 
@@ -81,6 +82,11 @@ public partial class HAMHMod : BasePlugin
             CraftingInjectionManager.Instance.Initialize();
             stopwatch4.Stop();
             Log.LogInfo($"[HAMH] Initialized CraftingInjectionManager in {stopwatch4.ElapsedMilliseconds}ms.");
+            
+            var stopwatch5 = Stopwatch.StartNew();
+            ChunkManager.Instance.Initialize();
+            stopwatch5.Stop();
+            Log.LogInfo($"[HAMH] Initialized ChunkManager in {stopwatch5.ElapsedMilliseconds}ms.");
 
             //var stopwatch3 = Stopwatch.StartNew();
             //UniverseLibConfig uvlconfig = new UniverseLibConfig
@@ -283,4 +289,3 @@ public partial class HAMHMod : BasePlugin
         }
     }
 }
-
