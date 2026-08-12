@@ -9,7 +9,13 @@ namespace HAModHelper.GamePlugin.Chunks.Patches;
 /// <summary>
 /// Injects custom registered biome objects into the overworld biome configuration on game start.
 /// </summary>
-[HarmonyPatch(typeof(ChunkControl), "Start")]
+/// <remarks>
+/// ChunkControl doesn't use Unity's Start() -- it implements the game's custom OrderedStart
+/// interface instead (public Start_0()/Start_1(), called by an ordered-init system rather than
+/// Unity's message pump). biomes/biome_scenic is serialized scene data already populated before
+/// either fires, so either hook works; Start_1 is used here since it's the later of the two.
+/// </remarks>
+[HarmonyPatch(typeof(ChunkControl), "Start_1")]
 public static class ChunkControl_Start_Patch
 {
     /// <summary>
