@@ -47,7 +47,14 @@ public static class AudioControl_Start_Patch
 /// <summary>
 /// Fires <see cref="MusicTrackSelectedEvent"/> whenever the game picks a track to play next.
 /// </summary>
-[HarmonyPatch(typeof(AudioControl), nameof(AudioControl.PickSong), new Type[] { typeof(string[]) })]
+/// <remarks>
+/// PickSong isn't overloaded, so it's patched by name only. Selecting the overload explicitly
+/// via <c>new Type[] { typeof(string[]) }</c> fails to resolve against the IL2CppInterop-generated
+/// method at runtime (AccessTools.DeclaredMethod reports "Could not find method"), which aborts
+/// the rest of Harmony's PatchAll() for every patch class enumerated after this one -- the same
+/// failure class as the ChunkControl_HostGetChunk_Patch bug fixed earlier in this repo's history.
+/// </remarks>
+[HarmonyPatch(typeof(AudioControl), nameof(AudioControl.PickSong))]
 public static class AudioControl_PickSong_Patch
 {
     [HarmonyPostfix]
