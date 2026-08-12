@@ -3,6 +3,7 @@ using HAModHelper.GamePlugin.Chunks.Systems;
 using System;
 using System.Collections.Generic;
 using HAModHelper.GamePlugin.Chunks.Events;
+using HAModHelper.GamePlugin.Base.Events;
 
 namespace HAModHelper.GamePlugin.Chunks.Patches;
 
@@ -55,6 +56,13 @@ public static class ChunkControl_Start_Patch
 /// <summary>
 /// Hooks chunk loading to trigger events for modders when chunks become available.
 /// </summary>
+/// <remarks>
+/// ChunkControl.HostGetChunk's real signature is
+/// <c>ChunkData HostGetChunk(string zone, int chunkX, int chunkZ)</c> -- the postfix's
+/// pass-through parameters must be named exactly chunkX/chunkZ (Harmony binds pass-through
+/// parameters by name) and __result must be typed ChunkData, not Chunk; the mismatch on both
+/// made Harmony's IL patcher throw "Parameter X not found" and abort PatchAll partway through.
+/// </remarks>
 [HarmonyPatch(typeof(ChunkControl), "HostGetChunk")]
 public static class ChunkControl_HostGetChunk_Patch
 {
@@ -62,13 +70,11 @@ public static class ChunkControl_HostGetChunk_Patch
     /// Postfix patch triggered when a chunk is retrieved or loaded by the host.
     /// </summary>
     [HarmonyPostfix]
-    public static void Postfix(string zone, int X, int Z, Chunk __result)
+    public static void Postfix(string zone, int chunkX, int chunkZ, ChunkData __result)
     {
         if (__result != null)
         {
-            // Trigger custom event for modders when a chunk completes loading/fetching
-            var evt = new ChunkLoadedEvent(zone, X, Z, __result);
-            // Dispatch via your framework's event manager
+            EventBus.Instance.Fire(new ChunkLoadedEvent(zone, chunkX, chunkZ, __result));
         }
     }
 }

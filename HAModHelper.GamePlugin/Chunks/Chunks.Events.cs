@@ -16,18 +16,18 @@ public class ChunkLoadedEvent : Base.Events.BaseEvent
     /// <summary>Gets the Z coordinate of the chunk in world grid space.</summary>
     public int ChunkZ { get; }
 
-    /// <summary>Gets the native Chunk instance.</summary>
-    public Chunk Chunk { get; }
+    /// <summary>Gets the native ChunkData instance -- the type ChunkControl.HostGetChunk actually returns.</summary>
+    public ChunkData ChunkData { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChunkLoadedEvent"/> class.
     /// </summary>
-    public ChunkLoadedEvent(string zone, int chunkX, int chunkZ, Chunk chunk)
+    public ChunkLoadedEvent(string zone, int chunkX, int chunkZ, ChunkData chunkData)
     {
         Zone = zone;
         ChunkX = chunkX;
         ChunkZ = chunkZ;
-        Chunk = chunk;
+        ChunkData = chunkData;
     }
 }
 
