@@ -41,4 +41,21 @@ public interface IDialogueManager
     /// <param name="npcDisplayName">Display name shown in the dialogue window header.</param>
     /// <returns><c>true</c> if the dialogue control and player were available and the dialogue was started.</returns>
     bool EnterDialogue(Dictionary<int, Dictionary<string, object>> dialogueData, int enterAt, string voice, string npcDisplayName = "");
+
+    /// <summary>
+    /// Registers dialogue for a world-placed "guard"/"wait"/"merchant"-mode companion NPC
+    /// (a <c>Companion</c> item, not a file-backed <c>DEBUG-npc</c>), matched by its
+    /// <c>npc_display_name</c> (case-insensitive).
+    /// </summary>
+    /// <remarks>
+    /// Unlike <see cref="RegisterNpcDialogue"/>, there's no clean way to intercept these NPCs'
+    /// dialogue before it starts -- <c>GameController.OnInteractWithCompanion</c> resolves the
+    /// companion item through an internal chunk/buildable lookup with no exposed hook point, and
+    /// (confirmed via native decompile) never reads "guard_message1"/"guard_message2" at all, so
+    /// there's nothing to override even for vanilla guard NPCs. Instead, this replaces whatever
+    /// dialogue the vanilla interaction just started, immediately after it starts.
+    /// </remarks>
+    /// <param name="npcDisplayName">The companion's <c>npc_display_name</c> custom field, e.g. <c>"Shindo Guard"</c>.</param>
+    /// <param name="dialogueData">Dialogue tree, keyed by node ID. See <see cref="RegisterNpcDialogue"/> for the required field shape.</param>
+    void RegisterCompanionDialogue(string npcDisplayName, Dictionary<int, Dictionary<string, object>> dialogueData);
 }

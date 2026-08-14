@@ -89,3 +89,34 @@ public static class DialogueControl_ClickOptionB_Patch
         EventBus.Instance.Fire(new DialogueOptionSelectedEvent(false));
     }
 }
+
+/// <summary>
+/// Replaces a world-placed companion NPC's dialogue (guard/wait/merchant modes) with
+/// mod-registered content, matched by display name.
+/// </summary>
+/// <remarks>
+/// GameController.OnInteractWithCompanion resolves its InventoryItem through an internal
+/// chunk/buildable lookup with no exposed parameter or hook point -- confirmed via native
+/// decompile, "companion_item" only exists as a local variable, not a method parameter -- so
+/// there's no way to intervene before it starts the vanilla dialogue. It's also confirmed to
+/// never read "guard_message1"/"guard_message2" at all (dead data in this build), so there's
+/// nothing to restore for unmodded guard NPCs either. Instead, this postfix lets the vanilla
+/// interaction run, then immediately swaps in custom content if the resulting
+/// curr_NPC_display_name matches a mod registration -- a brief re-open rather than a clean
+/// intercept, but avoids re-implementing the game's own chunk/buildable lookup.
+/// </remarks>
+[HarmonyPatch(typeof(GameController), "OnInteractWithCompanion")]
+public static class GameController_OnInteractWithCompanion_Patch
+{
+    [HarmonyPostfix]
+    public static void Postfix()
+    {
+        var dc = DialogueControl.Instance;
+        if (dc == null) return;
+        if (!DialogueManager.Instance.TryGetCompanionDialogue(dc.curr_NPC_display_name, out var dialogueData)) return;
+
+        var displayName = dc.curr_NPC_display_name;
+        dc.ExitDialogue(false);
+        DialogueManager.Instance.EnterDialogue(dialogueData!, 0, "", displayName);
+    }
+}

@@ -11,6 +11,7 @@ public sealed class DialogueManager : IDialogueManager
     public static DialogueManager Instance { get; } = new DialogueManager();
 
     private readonly Dictionary<string, FullNPC> _customNpcs = new();
+    private readonly Dictionary<string, Dictionary<int, Dictionary<string, object>>> _companionDialogue = new(StringComparer.OrdinalIgnoreCase);
 
     private DialogueManager() { }
 
@@ -18,6 +19,7 @@ public sealed class DialogueManager : IDialogueManager
     public void Reset()
     {
         _customNpcs.Clear();
+        _companionDialogue.Clear();
     }
 
     /// <summary>Initialize the dialogue manager (called on game start).</summary>
@@ -62,6 +64,23 @@ public sealed class DialogueManager : IDialogueManager
         dc.SetFocusNpc(null, npcDisplayName, "", DialogueControl.focus_type_t.none);
         dc.EnterDialogue(ToNativeDialogueData(dialogueData), enterAt, voice);
         return true;
+    }
+
+    /// <inheritdoc />
+    public void RegisterCompanionDialogue(string npcDisplayName, Dictionary<int, Dictionary<string, object>> dialogueData)
+    {
+        _companionDialogue[npcDisplayName] = dialogueData;
+    }
+
+    /// <summary>Used by the Harmony patch to look up mod-registered companion dialogue by display name.</summary>
+    internal bool TryGetCompanionDialogue(string? npcDisplayName, out Dictionary<int, Dictionary<string, object>>? dialogueData)
+    {
+        if (npcDisplayName == null)
+        {
+            dialogueData = null;
+            return false;
+        }
+        return _companionDialogue.TryGetValue(npcDisplayName, out dialogueData);
     }
 
     // FullNPC.dialogue_data and EnterDialogue's parameter are both Il2Cpp-native collections
