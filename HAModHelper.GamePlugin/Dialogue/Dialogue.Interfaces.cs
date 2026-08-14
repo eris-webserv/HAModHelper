@@ -28,10 +28,17 @@ public interface IDialogueManager
     /// </param>
     void RegisterNpcDialogue(string npcFileName, string translatedDisplayName, Dictionary<int, Dictionary<string, object>> dialogueData);
 
-    /// <summary>Starts a dialogue directly, bypassing NPC lookup entirely.</summary>
+    /// <summary>
+    /// Starts a dialogue directly, bypassing NPC lookup entirely. Primes focus first (matching
+    /// every vanilla call site), then requires <c>GameController.Instance.player</c> to be set --
+    /// the game's own <c>EnterDialogue</c> dereferences it and several other singletons
+    /// unconditionally, so calling this before the player has spawned returns <c>false</c>
+    /// instead of crashing.
+    /// </summary>
     /// <param name="dialogueData">Dialogue tree, keyed by node ID. See <see cref="RegisterNpcDialogue"/> for the required field shape.</param>
     /// <param name="enterAt">Node ID to start at.</param>
     /// <param name="voice">Voice key used for dialogue audio.</param>
-    /// <returns><c>true</c> if the dialogue control was available and the dialogue was started.</returns>
-    bool EnterDialogue(Dictionary<int, Dictionary<string, object>> dialogueData, int enterAt, string voice);
+    /// <param name="npcDisplayName">Display name shown in the dialogue window header.</param>
+    /// <returns><c>true</c> if the dialogue control and player were available and the dialogue was started.</returns>
+    bool EnterDialogue(Dictionary<int, Dictionary<string, object>> dialogueData, int enterAt, string voice, string npcDisplayName = "");
 }

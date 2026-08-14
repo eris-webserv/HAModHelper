@@ -47,11 +47,19 @@ public sealed class DialogueManager : IDialogueManager
     }
 
     /// <inheritdoc />
-    public bool EnterDialogue(Dictionary<int, Dictionary<string, object>> dialogueData, int enterAt, string voice)
+    public bool EnterDialogue(Dictionary<int, Dictionary<string, object>> dialogueData, int enterAt, string voice, string npcDisplayName = "")
     {
         var dc = DialogueControl.Instance;
         if (dc == null) return false;
 
+        // EnterDialogue dereferences GameController.Instance.player (among other singletons)
+        // without a null-check -- confirmed via native decompile -- so it crashes if called
+        // before the player has spawned, regardless of dialogue data. Every vanilla call site
+        // also primes focus with SetFocusNpc first; focus_type_t.none is the only variant that
+        // tolerates a null npc_obj, so it's safe to call standalone without a real NPC GameObject.
+        if (GameController.Instance?.player == null) return false;
+
+        dc.SetFocusNpc(null, npcDisplayName, "", DialogueControl.focus_type_t.none);
         dc.EnterDialogue(ToNativeDialogueData(dialogueData), enterAt, voice);
         return true;
     }
