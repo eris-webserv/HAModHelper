@@ -26,18 +26,25 @@ public sealed class DialogueManager : IDialogueManager
     }
 
     /// <inheritdoc />
-    public void RegisterNpcDialogue(string npcItemFullId, string translatedDisplayName, Dictionary<int, Dictionary<string, object>> dialogueData)
+    public void RegisterNpcDialogue(string npcFileName, string translatedDisplayName, Dictionary<int, Dictionary<string, object>> dialogueData)
     {
-        _customNpcs[npcItemFullId] = new FullNPC
+        _customNpcs[npcFileName] = new FullNPC
         {
             translated_display_name = translatedDisplayName,
             dialogue_data = ToNativeDialogueData(dialogueData)
         };
     }
 
-    /// <summary>Used by the Harmony patches to look up mod-registered NPC dialogue.</summary>
-    internal bool TryGetRegisteredNpc(string npcItemFullId, out FullNPC? npc)
-        => _customNpcs.TryGetValue(npcItemFullId, out npc);
+    /// <summary>Used by the Harmony patches to look up mod-registered NPC dialogue by npc_file.</summary>
+    internal bool TryGetRegisteredNpc(string? npcFileName, out FullNPC? npc)
+    {
+        if (npcFileName == null)
+        {
+            npc = null;
+            return false;
+        }
+        return _customNpcs.TryGetValue(npcFileName, out npc);
+    }
 
     /// <inheritdoc />
     public bool EnterDialogue(Dictionary<int, Dictionary<string, object>> dialogueData, int enterAt, string voice)

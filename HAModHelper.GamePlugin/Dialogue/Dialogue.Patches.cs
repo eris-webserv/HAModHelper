@@ -6,10 +6,16 @@ using HAModHelper.GamePlugin.Dialogue.Systems;
 namespace HAModHelper.GamePlugin.Dialogue.Patches;
 
 /// <summary>
-/// Returns mod-registered NPC dialogue instead of loading the vanilla file, when the NPC item
-/// has been registered via <c>DialogueManager.RegisterNpcDialogue</c>.
+/// Returns mod-registered NPC dialogue instead of loading the vanilla file, when the NPC's
+/// <c>npc_file</c> custom field has been registered via <c>DialogueManager.RegisterNpcDialogue</c>.
 /// </summary>
 /// <remarks>
+/// Every placed NPC in the game is an instance of the same generic "DEBUG-npc" item; individual
+/// NPCs are distinguished by a custom field <c>npc_file</c> (e.g. "Shindo Warrior (Sleeping)"),
+/// not by item_name -- confirmed by checking placed-NPC world data, where every entry shares the
+/// item type "DEBUG-npc" and only npc_file differs. Keying off item_name (as this used to) would
+/// never match a real NPC, since they're all the same item type.
+/// <para/>
 /// Both GetFullNPC and LoadFullNpcFile are patched (mirroring TryLoadInventoryItemPatch/
 /// GetFullItemNamePatch's dual-entry-point pattern for items in Base.GamePlugin.cs) since
 /// GetFullNPC's cache-check relative to LoadFullNpcFile wasn't independently confirmed via
@@ -22,7 +28,7 @@ public static class DialogueControl_GetFullNPC_Patch
     public static bool Prefix(InventoryItem npc_item, ref FullNPC __result)
     {
         if (npc_item == null) return true;
-        if (!DialogueManager.Instance.TryGetRegisteredNpc(npc_item.item_name, out var npc)) return true;
+        if (!DialogueManager.Instance.TryGetRegisteredNpc(npc_item.GetString("npc_file"), out var npc)) return true;
 
         __result = npc!;
         return false;
@@ -36,7 +42,7 @@ public static class DialogueControl_LoadFullNpcFile_Patch
     public static bool Prefix(InventoryItem npc_item, ref FullNPC __result)
     {
         if (npc_item == null) return true;
-        if (!DialogueManager.Instance.TryGetRegisteredNpc(npc_item.item_name, out var npc)) return true;
+        if (!DialogueManager.Instance.TryGetRegisteredNpc(npc_item.GetString("npc_file"), out var npc)) return true;
 
         __result = npc!;
         return false;
