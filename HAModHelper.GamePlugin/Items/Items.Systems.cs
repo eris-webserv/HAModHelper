@@ -128,7 +128,7 @@ public static class ItemConverter
 public sealed class ItemManager
 {
     public static ItemManager Instance { get; } = new ItemManager();
-
+    
     private Dictionary<string, Item> _items = new();
     private Dictionary<string, Item> _queuedItems = new();
     private HashSet<string> _removedBaseItems = new();

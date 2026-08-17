@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using HAModHelper.GamePlugin.Items.Systems;
 using HAModHelper.GamePlugin.Perks.Systems;
 using HAModHelper.GamePlugin.Gui.Systems;
@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using HAModHelper.GamePlugin.Debug;
 using static FriendServerInterface;
+using HAModHelper.GamePlugin.Chunks.Systems;
 
 namespace HAModHelper.GamePlugin.Core;
 
@@ -93,6 +94,11 @@ public partial class HAMHMod : BasePlugin
             DialogueManager.Instance.Initialize();
             stopwatch6.Stop();
             Log.LogInfo($"[HAMH] Initialized DialogueManager in {stopwatch6.ElapsedMilliseconds}ms.");
+
+            var stopwatch7 = Stopwatch.StartNew();
+            ChunkManager.Instance.Initialize();
+            stopwatch7.Stop();
+            Log.LogInfo($"[HAMH] Initialized ChunkManager in {stopwatch5.ElapsedMilliseconds}ms.");
 
             //var stopwatch3 = Stopwatch.StartNew();
             //UniverseLibConfig uvlconfig = new UniverseLibConfig
@@ -295,4 +301,3 @@ public partial class HAMHMod : BasePlugin
         }
     }
 }
-
