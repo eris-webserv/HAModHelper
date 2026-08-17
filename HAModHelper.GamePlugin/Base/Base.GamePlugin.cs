@@ -93,6 +93,11 @@ public partial class HAMHMod : BasePlugin
             DialogueManager.Instance.Initialize();
             stopwatch6.Stop();
             Log.LogInfo($"[HAMH] Initialized DialogueManager in {stopwatch6.ElapsedMilliseconds}ms.");
+            
+            var stopwatch8 = Stopwatch.StartNew();
+            PopupManager.Instance.Initialize();
+            stopwatch8.Stop();
+            Log.LogInfo($"[HAMH] Initialized PopupManager in {stopwatch5.ElapsedMilliseconds}ms.");
 
             //var stopwatch3 = Stopwatch.StartNew();
             //UniverseLibConfig uvlconfig = new UniverseLibConfig
