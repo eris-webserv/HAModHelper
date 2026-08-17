@@ -12,4 +12,14 @@ public class PopupShownEvent : BaseEvent
         Message = message;
         IsYesNo = isYesNo;
     }
+public class CustomScreenOpenedEvent : BaseEvent
+{
+    public string ScreenId { get; }
+    public CustomScreenOpenedEvent(string screenId) => ScreenId = screenId;
+}
+
+public class CustomScreenClosedEvent : BaseEvent
+{
+    public string ScreenId { get; }
+    public CustomScreenClosedEvent(string screenId) => ScreenId = screenId;
 }
