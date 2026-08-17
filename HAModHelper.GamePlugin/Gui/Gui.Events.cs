@@ -12,6 +12,7 @@ public class PopupShownEvent : BaseEvent
         Message = message;
         IsYesNo = isYesNo;
     }
+}
 public class CustomScreenOpenedEvent : BaseEvent
 {
     public string ScreenId { get; }
