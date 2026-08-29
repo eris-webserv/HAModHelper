@@ -294,5 +294,27 @@ public partial class HAMHMod : BasePlugin
             }
         }
     }
+
+    [HarmonyPatch(typeof(inventory_ctr), "ON_DOUBLE_CLICK")]
+    private static class InventoryDoubleClickPatch
+    {
+        [HarmonyPrefix]
+        static bool Prefix(inventory_ctr __instance, object[] __args)
+        {
+            try
+            {
+                // extract data about the item for logic patching
+                int uiSlotId = (int)__args[0];
+                string action = __args[1]?.ToString() ?? "null";
+
+                return ItemManager.Instance.HandleItemDoubleClick(__instance, uiSlotId, action);
+            }
+            catch (Exception ex)
+            {
+                HAMHMod.Logger.LogError($"[HAMH] Sniffer Patch Fail: {ex.Message}");
+                return true;
+            }
+        }
+    }
 }
 
