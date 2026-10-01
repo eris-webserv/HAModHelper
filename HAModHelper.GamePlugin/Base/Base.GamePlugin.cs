@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using HAModHelper.GamePlugin.Assets.Systems;
 using HAModHelper.GamePlugin.Items.Systems;
 using HAModHelper.GamePlugin.Perks.Systems;
 using HAModHelper.GamePlugin.Gui.Systems;
@@ -75,9 +76,9 @@ public partial class HAMHMod : BasePlugin
             Log.LogInfo($"[HAMH] Initialized PerkManager in {stopwatch2.ElapsedMilliseconds}ms.");
 
             var stopwatch3 = Stopwatch.StartNew();
-            WorldPrefabManager.Instance.Initialize();
+            AssetBundleManager.Instance.Initialize();
             stopwatch3.Stop();
-            Log.LogInfo($"[HAMH] Initialized WorldPrefabManager in {stopwatch3.ElapsedMilliseconds}ms.");
+            Log.LogInfo($"[HAMH] Initialized AssetBundleManager in {stopwatch3.ElapsedMilliseconds}ms.");
 
             var stopwatch4 = Stopwatch.StartNew();
             CraftingInjectionManager.Instance.Initialize();

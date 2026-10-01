@@ -12,7 +12,7 @@ namespace HAModHelper.GamePlugin.Gui.Systems;
 /// the game's main GUI canvas. Registered screens are written into
 /// <c>WindowPrefabsControl.prefab_screens_instantiated</c> so the game's own
 /// <c>GetScreen</c>/<c>GetObject</c>/<c>DestroyScreen</c> calls keep working on them too —
-/// mirrors how <see cref="Items.Systems.WorldPrefabManager"/> injects custom world prefabs.
+/// mirrors how <see cref="Assets.Systems.AssetBundleManager"/> injects custom world prefabs.
 /// </summary>
 public sealed class WindowManager
 {
