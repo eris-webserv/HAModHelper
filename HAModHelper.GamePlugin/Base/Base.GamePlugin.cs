@@ -3,6 +3,7 @@ using HAModHelper.GamePlugin.Items.Systems;
 using HAModHelper.GamePlugin.Perks.Systems;
 using HAModHelper.GamePlugin.Gui.Systems;
 using HAModHelper.GamePlugin.Dialogue.Systems;
+using HAModHelper.GamePlugin.Creatures.Systems;
 using HAModHelper.GamePlugin.Core.Debug;
 using System.Net;
 using BepInEx.Unity.IL2CPP;
@@ -93,6 +94,11 @@ public partial class HAMHMod : BasePlugin
             DialogueManager.Instance.Initialize();
             stopwatch6.Stop();
             Log.LogInfo($"[HAMH] Initialized DialogueManager in {stopwatch6.ElapsedMilliseconds}ms.");
+
+            var stopwatch7 = Stopwatch.StartNew();
+            CreatureManager.Instance.Initialize();
+            stopwatch7.Stop();
+            Log.LogInfo($"[HAMH] Initialized CreatureManager in {stopwatch7.ElapsedMilliseconds}ms.");
 
             //var stopwatch3 = Stopwatch.StartNew();
             //UniverseLibConfig uvlconfig = new UniverseLibConfig
